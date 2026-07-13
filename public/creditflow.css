@@ -71,13 +71,14 @@ select {
 }
 
 .brand-mark {
-  display: grid;
+  display: block;
   width: 28px;
   height: 28px;
-  place-items: center;
-  color: var(--lime);
+  object-fit: contain;
   background: var(--charcoal);
   border-radius: 8px;
+  padding: 4px;
+  box-sizing: border-box;
 }
 
 .nav-links {
