@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CreditFlow Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="CreditFlow role dashboard.">
+  <meta name="theme-color" content="#f5f5f2">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="creditflow.css">
+</head>
+<body>
+  <main class="page-shell dashboard-main" hidden>
+    <nav class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="dashboard.html" aria-label="CreditFlow dashboard">
+        <span class="brand-mark">C</span>
+        <span>CreditFlow</span>
+      </a>
+      <button class="quiet-btn" id="logoutButton" type="button">Log Out</button>
+    </nav>
+
+    <section class="dashboard-panel role-dashboard">
+      <div class="dashboard-top">
+        <div>
+          <p class="eyebrow">Signed in as <span id="usernameLabel"></span></p>
+          <h1 id="dashboardTitle">Dashboard</h1>
+        </div>
+        <span class="role-pill" id="userRole">Role</span>
+      </div>
+
+      <div id="dashboardList" class="data-list" aria-live="polite"></div>
+      <p id="dashboardStatus" class="status-message" role="status"></p>
+    </section>
+  </main>
+
+  <script src="auth.js"></script>
+  <script>
+    const session = window.CreditFlowAuth.getSession();
+    const main = document.querySelector(".dashboard-main");
+    const status = document.querySelector("#dashboardStatus");
+    const list = document.querySelector("#dashboardList");
+
+    if (!session) {
+      window.location.replace("login.html");
+    } else {
+      main.hidden = false;
+      document.querySelector("#usernameLabel").textContent = session.username;
+      document.querySelector("#userRole").textContent = session.role.replace("ROLE_", "").replace("_", " ");
+      loadDashboard(session);
+    }
+
+    document.querySelector("#logoutButton").addEventListener("click", () => {
+      window.CreditFlowAuth.clearSession();
+      window.location.href = "login.html";
+    });
+
+    async function loadDashboard(activeSession) {
+      const config = getDashboardConfig(activeSession.role);
+      if (!config) {
+        status.textContent = "No dashboard is available for this role.";
+        return;
+      }
+
+      document.querySelector("#dashboardTitle").textContent = config.title;
+      status.textContent = "Loading...";
+      try {
+        const rows = await window.CreditFlowAuth.getJson(config.path);
+        renderRows(rows, config);
+        status.textContent = "";
+      } catch (error) {
+        list.innerHTML = "";
+        status.textContent = error.message;
+        status.className = "status-message error";
+      }
+    }
+
+    function getDashboardConfig(role) {
+      if (role === "ROLE_ADMIN") {
+        return {
+          title: "Employees",
+          path: "/admin/employees",
+          columns: ["ID", "Username", "First name", "Last name", "Email", "Role"],
+          values: (row) => [row.id, row.username, row.firstName, row.lastName, row.email, row.role]
+        };
+      }
+      if (role === "ROLE_MANAGER") {
+        return {
+          title: "Analysts",
+          path: "/manager/analysts",
+          columns: ["ID", "Username", "First name", "Last name", "Email"],
+          values: (row) => [row.id, row.username, row.firstName, row.lastName, row.email]
+        };
+      }
+      if (role === "ROLE_ANALYST") {
+        return {
+          title: "Pending dossiers",
+          path: "/analyst/dossiers/pending",
+          columns: ["ID", "SIREN", "Client type", "Status", "Created"],
+          values: (row) => [row.id, row.siren || "-", row.clientType, row.status, formatDate(row.creationDate)]
+        };
+      }
+      return null;
+    }
+
+    function renderRows(rows, config) {
+      if (!Array.isArray(rows) || rows.length === 0) {
+        list.innerHTML = `<p class="empty-state">No records found.</p>`;
+        return;
+      }
+
+      const header = config.columns.map((column) => `<span>${escapeHtml(column)}</span>`).join("");
+      const body = rows.map((row) => {
+        const cells = config.values(row).map((value) => `<span>${escapeHtml(String(value ?? ""))}</span>`).join("");
+        return `<div class="data-row">${cells}</div>`;
+      }).join("");
+      list.innerHTML = `<div class="data-table" style="--columns:${config.columns.length}"><div class="data-header">${header}</div>${body}</div>`;
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+      return String(value).replace("T", " ").slice(0, 16);
+    }
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#039;"
+      })[char]);
+    }
+  </script>
+</body>
+</html>

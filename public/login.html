@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Sign in - CreditFlow</title>
+  <title>CreditFlow Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Sign in or create an account for the CreditFlow credit evaluation workspace.">
+  <meta name="description" content="CreditFlow login.">
   <meta name="theme-color" content="#f5f5f2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,53 +14,20 @@
 <body>
   <main class="page-shell">
     <nav class="topbar" aria-label="Primary navigation">
-      <a class="brand" href="main.html" aria-label="CreditFlow home">
+      <a class="brand" href="login.html" aria-label="CreditFlow login">
         <span class="brand-mark">C</span>
         <span>CreditFlow</span>
       </a>
-      <div class="nav-links">
-        <a href="main.html">Workspace</a>
-        <a href="main.html#reviews">Reviews</a>
-        <a href="main.html#records">Records</a>
-      </div>
-      <a class="quiet-btn" href="main.html">Main</a>
     </nav>
 
-    <section class="auth-page">
+    <section class="auth-page login-only">
       <div class="auth-intro">
-        <p class="eyebrow">Secure workspace access</p>
-        <h1>Sign in to manage credit decisions</h1>
-        <p class="intro-copy">
-          Create an analyst account or sign in with an existing profile. Successful authentication opens the main CreditFlow workspace.
-        </p>
-        <div class="auth-metrics" aria-label="Platform overview">
-          <div class="auth-metric">
-            <strong>4</strong>
-            <span class="metric-label">Review stages</span>
-          </div>
-          <div class="auth-metric">
-            <strong>87%</strong>
-            <span class="metric-label">Current confidence</span>
-          </div>
-          <div class="auth-metric">
-            <strong>12m</strong>
-            <span class="metric-label">Average review</span>
-          </div>
-        </div>
+        <p class="eyebrow">CreditFlow</p>
+        <h1>Sign in</h1>
       </div>
 
       <div class="auth-panel" aria-label="Authentication panel">
-        <div class="tab-switch" role="tablist" aria-label="Authentication mode">
-          <button id="signInTab" class="active" type="button" role="tab" aria-selected="true">Sign In</button>
-          <button id="createTab" type="button" role="tab" aria-selected="false">Create Account</button>
-        </div>
-
         <form id="signInForm" class="auth-form">
-          <div>
-            <p class="eyebrow">Existing profile</p>
-            <h2>Welcome back</h2>
-            <p class="panel-copy">Demo users: admin/admin, banker/bankerpass, analyst/analystpass.</p>
-          </div>
           <label class="field">
             <span>Username</span>
             <input id="signinUsername" name="username" autocomplete="username" required>
@@ -69,39 +36,8 @@
             <span>Password</span>
             <input id="signinPassword" name="password" type="password" autocomplete="current-password" required>
           </label>
-          <div class="form-row">
-            <button class="dark-btn" type="submit">Sign In</button>
-            <button class="text-link" id="switchToCreate" type="button">Create account</button>
-          </div>
+          <button class="dark-btn" type="submit">Sign In</button>
           <p id="signInStatus" class="status-message" role="status"></p>
-        </form>
-
-        <form id="createForm" class="auth-form" hidden>
-          <div>
-            <p class="eyebrow">New profile</p>
-            <h2>Create your account</h2>
-            <p class="panel-copy">Accounts are created in the backend when it is available, with local demo storage as a fallback.</p>
-          </div>
-          <label class="field">
-            <span>Username</span>
-            <input id="createUsername" name="username" autocomplete="username" minlength="3" required>
-          </label>
-          <label class="field">
-            <span>Password</span>
-            <input id="createPassword" name="password" type="password" autocomplete="new-password" minlength="4" required>
-          </label>
-          <label class="field">
-            <span>Role</span>
-            <select id="createRole" name="role">
-              <option value="ROLE_BANQUIER">Banker</option>
-              <option value="ROLE_ADMIN">Administrator</option>
-            </select>
-          </label>
-          <div class="form-row">
-            <button class="lime-btn" type="submit">Create Account</button>
-            <button class="text-link" id="switchToSignIn" type="button">Sign in instead</button>
-          </div>
-          <p id="createStatus" class="status-message" role="status"></p>
         </form>
       </div>
     </section>
@@ -109,63 +45,24 @@
 
   <script src="auth.js"></script>
   <script>
-    const signInTab = document.querySelector("#signInTab");
-    const createTab = document.querySelector("#createTab");
     const signInForm = document.querySelector("#signInForm");
-    const createForm = document.querySelector("#createForm");
     const signInStatus = document.querySelector("#signInStatus");
-    const createStatus = document.querySelector("#createStatus");
 
-    function setMode(mode) {
-      const isSignIn = mode === "signin";
-      signInForm.hidden = !isSignIn;
-      createForm.hidden = isSignIn;
-      signInTab.classList.toggle("active", isSignIn);
-      createTab.classList.toggle("active", !isSignIn);
-      signInTab.setAttribute("aria-selected", String(isSignIn));
-      createTab.setAttribute("aria-selected", String(!isSignIn));
-      signInStatus.textContent = "";
-      createStatus.textContent = "";
-      signInStatus.className = "status-message";
-      createStatus.className = "status-message";
+    function setStatus(message, type) {
+      signInStatus.textContent = message;
+      signInStatus.className = `status-message ${type || ""}`.trim();
     }
-
-    function setStatus(element, message, type) {
-      element.textContent = message;
-      element.className = `status-message ${type || ""}`.trim();
-    }
-
-    signInTab.addEventListener("click", () => setMode("signin"));
-    createTab.addEventListener("click", () => setMode("create"));
-    document.querySelector("#switchToCreate").addEventListener("click", () => setMode("create"));
-    document.querySelector("#switchToSignIn").addEventListener("click", () => setMode("signin"));
 
     signInForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const username = document.querySelector("#signinUsername").value.trim();
       const password = document.querySelector("#signinPassword").value;
-      setStatus(signInStatus, "Signing in...", "");
+      setStatus("Signing in...", "");
       try {
         await window.CreditFlowAuth.signIn(username, password);
-        setStatus(signInStatus, "Signed in. Opening workspace...", "success");
-        window.location.href = "main.html";
+        window.location.href = "dashboard.html";
       } catch (error) {
-        setStatus(signInStatus, error.message, "error");
-      }
-    });
-
-    createForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const username = document.querySelector("#createUsername").value.trim();
-      const password = document.querySelector("#createPassword").value;
-      const role = document.querySelector("#createRole").value;
-      setStatus(createStatus, "Creating account...", "");
-      try {
-        await window.CreditFlowAuth.createAccount(username, password, role);
-        setStatus(createStatus, "Account created. Opening workspace...", "success");
-        window.location.href = "main.html";
-      } catch (error) {
-        setStatus(createStatus, error.message, "error");
+        setStatus(error.message, "error");
       }
     });
   </script>

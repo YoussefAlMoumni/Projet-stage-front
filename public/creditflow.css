@@ -141,6 +141,10 @@ select {
   padding-top: 22px;
 }
 
+.auth-page.login-only {
+  align-items: stretch;
+}
+
 .auth-intro,
 .auth-panel,
 .dashboard-panel,
@@ -411,6 +415,64 @@ h1 {
 .record-card.highlight .record-meta,
 .record-card.highlight p {
   color: #343130;
+}
+
+.role-dashboard {
+  margin-top: 22px;
+}
+
+.role-dashboard h1 {
+  margin-bottom: 0;
+  font-size: clamp(34px, 5vw, 56px);
+}
+
+.data-list {
+  overflow-x: auto;
+}
+
+.data-table {
+  min-width: 760px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.data-header,
+.data-row {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(120px, 1fr));
+}
+
+.data-header {
+  color: var(--muted);
+  background: #f1f0ea;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.data-header span,
+.data-row span {
+  min-width: 0;
+  padding: 14px;
+  overflow-wrap: anywhere;
+  border-right: 1px solid var(--line);
+}
+
+.data-header span:last-child,
+.data-row span:last-child {
+  border-right: 0;
+}
+
+.data-row {
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+
+.empty-state {
+  margin: 0;
+  color: var(--muted);
+  font-family: "JetBrains Mono", monospace;
 }
 
 @media (max-width: 900px) {

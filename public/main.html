@@ -2,105 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Main Workspace - CreditFlow</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="CreditFlow main workspace for credit review, risk checks, and approval tracking.">
-  <meta name="theme-color" content="#f5f5f2">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="creditflow.css">
+  <title>CreditFlow</title>
+  <meta http-equiv="refresh" content="0; url=login.html">
 </head>
 <body>
-  <main class="page-shell dashboard-main" hidden>
-    <nav class="topbar" aria-label="Primary navigation">
-      <a class="brand" href="main.html" aria-label="CreditFlow home">
-        <span class="brand-mark">C</span>
-        <span>CreditFlow</span>
-      </a>
-      <div class="nav-links">
-        <a href="#reviews">Reviews</a>
-        <a href="#records">Records</a>
-        <a href="#controls">Controls</a>
-      </div>
-      <button class="quiet-btn" id="logoutButton" type="button">Log Out</button>
-    </nav>
-
-    <section class="main-layout">
-      <aside class="side-panel">
-        <span class="role-pill" id="userRole">Workspace</span>
-        <h1>Credit review command center</h1>
-        <p class="intro-copy">
-          Track dossier quality, decision confidence, guarantees, and compliance from a single focused workspace.
-        </p>
-      </aside>
-
-      <section class="dashboard-panel" id="reviews">
-        <div class="dashboard-top">
-          <div>
-            <p class="eyebrow">Signed in as <span id="usernameLabel"></span></p>
-            <h2>Today&apos;s review queue</h2>
-            <p class="panel-copy">A compact sample workspace for the authenticated user.</p>
-          </div>
-          <a class="lime-btn" href="login.html">Switch Account</a>
-        </div>
-
-        <div class="metric-grid" aria-label="Review metrics">
-          <article class="dashboard-metric">
-            <span class="metric-label">Open dossiers</span>
-            <strong>18</strong>
-          </article>
-          <article class="dashboard-metric">
-            <span class="metric-label">Avg. score</span>
-            <strong>742</strong>
-          </article>
-          <article class="dashboard-metric">
-            <span class="metric-label">Ready approvals</span>
-            <strong>6</strong>
-          </article>
-        </div>
-
-        <div class="record-grid" id="records">
-          <article class="record-card highlight">
-            <span class="record-meta">Dossier CF-1042</span>
-            <h3>Guarantees verified</h3>
-            <p>Collateral value and debt ratio checks are ready for final supervisor review.</p>
-          </article>
-          <article class="record-card">
-            <span class="record-meta">Dossier CF-1043</span>
-            <h3>Compliance review</h3>
-            <p>Identity documents and risk classification require one analyst confirmation.</p>
-          </article>
-          <article class="record-card">
-            <span class="record-meta">Dossier CF-1044</span>
-            <h3>History stable</h3>
-            <p>Repayment behavior and recent account activity support a low-risk recommendation.</p>
-          </article>
-          <article class="record-card" id="controls">
-            <span class="record-meta">Workspace controls</span>
-            <h3>Audit-ready actions</h3>
-            <p>Every sign-off can be paired with user identity, timestamp, and review stage.</p>
-          </article>
-        </div>
-      </section>
-    </section>
-  </main>
-
-  <script src="auth.js"></script>
-  <script>
-    const session = window.CreditFlowAuth.getSession();
-    if (!session) {
-      window.location.replace("login.html");
-    } else {
-      document.querySelector(".dashboard-main").hidden = false;
-      document.querySelector("#usernameLabel").textContent = session.username;
-      document.querySelector("#userRole").textContent = session.role.replace("ROLE_", "").replace("_", " ");
-    }
-
-    document.querySelector("#logoutButton").addEventListener("click", () => {
-      window.CreditFlowAuth.clearSession();
-      window.location.href = "login.html";
-    });
-  </script>
+  <script>window.location.replace("login.html");</script>
 </body>
 </html>

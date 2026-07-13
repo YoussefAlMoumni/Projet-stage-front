@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -6,6 +6,10 @@ import { Component, signal } from '@angular/core';
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App {
+export class App implements OnInit {
   protected readonly title = signal('CreditFlow');
+
+  ngOnInit(): void {
+    window.location.replace('login.html');
+  }
 }

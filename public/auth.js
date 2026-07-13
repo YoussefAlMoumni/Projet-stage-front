@@ -4,9 +4,10 @@
   const SESSION_KEY = "creditflow.session";
 
   const demoAccounts = [
-    { username: "admin", password: "admin", role: "ROLE_ADMIN" },
-    { username: "banker", password: "bankerpass", role: "ROLE_BANQUIER" },
-    { username: "analyst", password: "analystpass", role: "ROLE_BANQUIER" }
+    { username: "admin", password: "adminpass", role: "ROLE_ADMIN" },
+    { username: "manager", password: "managerpass", role: "ROLE_MANAGER" },
+    { username: "banker", password: "bankerpass", role: "ROLE_MANAGER" },
+    { username: "analyst", password: "analystpass", role: "ROLE_ANALYST" }
   ];
 
   function readJson(key, fallback) {
@@ -73,6 +74,21 @@
     return data;
   }
 
+  async function getJson(path) {
+    const session = getSession();
+    const headers = {};
+    if (session?.token) {
+      headers.Authorization = `Bearer ${session.token}`;
+    }
+
+    const response = await fetch(`${API_BASE}${path}`, { headers });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.message || data.error || "Request failed.");
+    }
+    return data;
+  }
+
   async function signIn(username, password) {
     try {
       const data = await postJson("/auth/login", { username, password });
@@ -108,6 +124,7 @@
 
   window.CreditFlowAuth = {
     createAccount,
+    getJson,
     signIn,
     getSession,
     clearSession
