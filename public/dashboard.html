@@ -33,6 +33,46 @@
 
       <div id="dashboardList" class="data-list" aria-live="polite"></div>
       <p id="dashboardStatus" class="status-message" role="status"></p>
+
+      <form id="userCrudForm" class="crud-form" hidden>
+        <input id="userId" type="hidden">
+        <label class="field">
+          <span>Username</span>
+          <input id="userUsername" required>
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input id="userPassword" type="password">
+        </label>
+        <label class="field">
+          <span>First name</span>
+          <input id="userFirstName" required>
+        </label>
+        <label class="field">
+          <span>Last name</span>
+          <input id="userLastName" required>
+        </label>
+        <label class="field">
+          <span>Email</span>
+          <input id="userEmail" type="email" required>
+        </label>
+        <label class="field">
+          <span>National ID</span>
+          <input id="userNationalId" required>
+        </label>
+        <label class="field">
+          <span>Role</span>
+          <select id="userRoleInput" required>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="analyst">Analyst</option>
+          </select>
+        </label>
+        <div class="form-row">
+          <button class="dark-btn" type="submit">Save User</button>
+          <button class="quiet-btn" id="resetUserForm" type="button">New User</button>
+        </div>
+      </form>
     </section>
   </main>
 
@@ -42,6 +82,9 @@
     const main = document.querySelector(".dashboard-main");
     const status = document.querySelector("#dashboardStatus");
     const list = document.querySelector("#dashboardList");
+    const userCrudForm = document.querySelector("#userCrudForm");
+    let activeConfig = null;
+    let activeRows = [];
 
     if (!session) {
       window.location.replace("login.html");
@@ -65,9 +108,12 @@
       }
 
       document.querySelector("#dashboardTitle").textContent = config.title;
+      activeConfig = config;
+      userCrudForm.hidden = activeSession.role !== "ROLE_ADMIN";
       status.textContent = "Loading...";
       try {
         const rows = await window.CreditFlowAuth.getJson(config.path);
+        activeRows = rows;
         renderRows(rows, config);
         status.textContent = "";
       } catch (error) {
@@ -82,8 +128,9 @@
         return {
           title: "Employees",
           path: "/admin/employees",
-          columns: ["ID", "Username", "First name", "Last name", "Email", "Role"],
-          values: (row) => [row.id, row.username, row.firstName, row.lastName, row.email, row.role]
+          columns: ["ID", "Username", "First name", "Last name", "Email", "Role", "Actions"],
+          values: (row) => [row.id, row.username, row.firstName, row.lastName, row.email, row.role],
+          actions: true
         };
       }
       if (role === "ROLE_MANAGER") {
@@ -113,10 +160,76 @@
 
       const header = config.columns.map((column) => `<span>${escapeHtml(column)}</span>`).join("");
       const body = rows.map((row) => {
-        const cells = config.values(row).map((value) => `<span>${escapeHtml(String(value ?? ""))}</span>`).join("");
+        let cells = config.values(row).map((value) => `<span>${escapeHtml(String(value ?? ""))}</span>`).join("");
+        if (config.actions) {
+          cells += `<span class="action-cell"><button class="text-link" data-action="edit" data-id="${row.id}" type="button">Edit</button><button class="text-link danger" data-action="delete" data-id="${row.id}" type="button">Delete</button></span>`;
+        }
         return `<div class="data-row">${cells}</div>`;
       }).join("");
       list.innerHTML = `<div class="data-table" style="--columns:${config.columns.length}"><div class="data-header">${header}</div>${body}</div>`;
+    }
+
+    list.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      const id = Number(button.dataset.id);
+      const row = activeRows.find((item) => item.id === id);
+      if (button.dataset.action === "edit" && row) {
+        fillUserForm(row);
+      }
+      if (button.dataset.action === "delete") {
+        await window.CreditFlowAuth.deleteJson(`/admin/users/${id}`);
+        resetUserForm();
+        await loadDashboard(session);
+      }
+    });
+
+    userCrudForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const id = document.querySelector("#userId").value;
+      const payload = readUserForm();
+      if (id) {
+        await window.CreditFlowAuth.putJson(`/admin/users/${id}`, payload);
+      } else {
+        await window.CreditFlowAuth.postJson("/admin/users", payload);
+      }
+      resetUserForm();
+      await loadDashboard(session);
+    });
+
+    document.querySelector("#resetUserForm").addEventListener("click", resetUserForm);
+
+    function fillUserForm(row) {
+      document.querySelector("#userId").value = row.id || "";
+      document.querySelector("#userUsername").value = row.username || "";
+      document.querySelector("#userPassword").value = "";
+      document.querySelector("#userFirstName").value = row.firstName || "";
+      document.querySelector("#userLastName").value = row.lastName || "";
+      document.querySelector("#userEmail").value = row.email || "";
+      document.querySelector("#userNationalId").value = row.nationalId || "";
+      document.querySelector("#userRoleInput").value = row.role || "manager";
+    }
+
+    function readUserForm() {
+      const payload = {
+        username: document.querySelector("#userUsername").value.trim(),
+        password: document.querySelector("#userPassword").value,
+        firstName: document.querySelector("#userFirstName").value.trim(),
+        lastName: document.querySelector("#userLastName").value.trim(),
+        email: document.querySelector("#userEmail").value.trim(),
+        nationalId: document.querySelector("#userNationalId").value.trim(),
+        role: document.querySelector("#userRoleInput").value
+      };
+      if (!payload.password) {
+        delete payload.password;
+      }
+      return payload;
+    }
+
+    function resetUserForm() {
+      userCrudForm.reset();
+      document.querySelector("#userId").value = "";
+      document.querySelector("#userRoleInput").value = "manager";
     }
 
     function formatDate(value) {
