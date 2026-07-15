@@ -186,18 +186,18 @@ select:focus-visible {
   position: relative;
 }
 
-..password-field input {
-  padding-right: 66px;
+.password-field input {
+  padding-right: 78px;
 }
 
 .password-toggle {
   position: absolute;
-  top: 50%;
-  right: 12px;
+  top: calc(50% + 15px);
+  right: 14px;
   transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
-  background: rgba(92, 203, 210, 0.14);
+  width: 46px;
+  height: 46px;
+  background: rgba(92, 203, 210, 0.18);
   border: 1px solid transparent;
   border-radius: 999px;
   color: var(--color-primary);

@@ -62,6 +62,10 @@
       signInStatus.className = `status-message ${type || ""}`.trim();
     }
 
+    window.addEventListener("pageshow", () => {
+      setStatus("", "");
+    });
+
     togglePassword.addEventListener("click", () => {
       const isHidden = passwordInput.type === "password";
       passwordInput.type = isHidden ? "text" : "password";
