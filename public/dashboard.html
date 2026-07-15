@@ -19,61 +19,85 @@
         <img class="brand-mark" src="favicon.ico" alt="CreditFlow logo">
         <span>CreditFlow</span>
       </a>
-      <button class="quiet-btn" id="logoutButton" type="button">Log Out</button>
+      <button class="secondary-btn" id="logoutButton" type="button">Log out</button>
     </nav>
 
-    <section class="dashboard-panel role-dashboard">
-      <div class="dashboard-top">
-        <div>
-          <p class="eyebrow">Signed in as <span id="usernameLabel"></span></p>
-          <h1 id="dashboardTitle">Dashboard</h1>
-        </div>
+    <section class="dashboard-panel dashboard-header">
+      <div>
+        <p class="eyebrow">Signed in as <span id="usernameLabel"></span></p>
+        <h1 id="dashboardTitle">Dashboard</h1>
+        <p class="intro-copy">Manage your team, approvals, and credit review workflows from one clean workspace.</p>
+      </div>
+      <div class="user-badge">
+        <span class="user-label">Role</span>
         <span class="role-pill" id="userRole">Role</span>
       </div>
-
-      <div id="dashboardList" class="data-list" aria-live="polite"></div>
-      <p id="dashboardStatus" class="status-message" role="status"></p>
-
-      <form id="userCrudForm" class="crud-form" hidden>
-        <input id="userId" type="hidden">
-        <label class="field">
-          <span>Username</span>
-          <input id="userUsername" required>
-        </label>
-        <label class="field">
-          <span>Password</span>
-          <input id="userPassword" type="password">
-        </label>
-        <label class="field">
-          <span>First name</span>
-          <input id="userFirstName" required>
-        </label>
-        <label class="field">
-          <span>Last name</span>
-          <input id="userLastName" required>
-        </label>
-        <label class="field">
-          <span>Email</span>
-          <input id="userEmail" type="email" required>
-        </label>
-        <label class="field">
-          <span>National ID</span>
-          <input id="userNationalId" required>
-        </label>
-        <label class="field">
-          <span>Role</span>
-          <select id="userRoleInput" required>
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
-            <option value="analyst">Analyst</option>
-          </select>
-        </label>
-        <div class="form-row">
-          <button class="dark-btn" type="submit">Save User</button>
-          <button class="quiet-btn" id="resetUserForm" type="button">New User</button>
-        </div>
-      </form>
     </section>
+
+    <div class="dashboard-grid">
+      <section class="dashboard-panel dashboard-table-panel">
+        <div class="table-header">
+          <div>
+            <h2 class="section-title" id="tableTitle">Records</h2>
+            <p class="intro-copy">A live view of your current workspace data.</p>
+          </div>
+          <span id="dashboardStatus" class="status-message" role="status" aria-live="polite"></span>
+        </div>
+        <div id="dashboardList" class="data-list"></div>
+      </section>
+
+      <aside class="dashboard-panel dashboard-aside" aria-label="User management">
+        <div class="section-title-wrap">
+          <h2 class="section-title">User management</h2>
+          <p class="intro-copy">Create and update employee accounts for your team.</p>
+        </div>
+
+        <form id="userCrudForm" class="crud-form" hidden novalidate>
+          <input id="userId" type="hidden">
+          <label class="field">
+            <span>Username</span>
+            <input id="userUsername" required>
+          </label>
+          <label class="field password-field">
+            <span>Password</span>
+            <input id="userPassword" type="password">
+            <button type="button" id="toggleUserPassword" class="password-toggle" aria-label="Show password">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5 16.5 9.51 16.5 12 14.49 16.5 12 16.5zm0-7.5c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+              </svg>
+            </button>
+          </label>
+          <label class="field">
+            <span>First name</span>
+            <input id="userFirstName" required>
+          </label>
+          <label class="field">
+            <span>Last name</span>
+            <input id="userLastName" required>
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input id="userEmail" type="email" required>
+          </label>
+          <label class="field">
+            <span>National ID</span>
+            <input id="userNationalId" required>
+          </label>
+          <label class="field">
+            <span>Role</span>
+            <select id="userRoleInput" required>
+              <option value="admin">Admin</option>
+              <option value="manager">Manager</option>
+              <option value="analyst">Analyst</option>
+            </select>
+          </label>
+          <div class="form-row button-row">
+            <button class="primary-btn" type="submit">Save user</button>
+            <button class="secondary-btn" id="resetUserForm" type="button">New user</button>
+          </div>
+        </form>
+      </aside>
+    </div>
   </main>
 
   <script src="auth.js"></script>
@@ -99,6 +123,16 @@
       window.CreditFlowAuth.clearSession();
       window.location.href = "login.html";
     });
+
+    const toggleUserPassword = document.querySelector("#toggleUserPassword");
+    const userPassword = document.querySelector("#userPassword");
+    if (toggleUserPassword && userPassword) {
+      toggleUserPassword.addEventListener("click", () => {
+        const isHidden = userPassword.type === "password";
+        userPassword.type = isHidden ? "text" : "password";
+        toggleUserPassword.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+      });
+    }
 
     async function loadDashboard(activeSession) {
       const config = getDashboardConfig(activeSession.role);
