@@ -1,15 +1,11 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [],
+  standalone: true,
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App implements OnInit {
-  protected readonly title = signal('CreditFlow');
-
-  ngOnInit(): void {
-    window.location.replace('login.html');
-  }
-}
+export class App {}

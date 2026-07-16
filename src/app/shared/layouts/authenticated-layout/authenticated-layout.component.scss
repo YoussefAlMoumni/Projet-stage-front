@@ -1,0 +1,11 @@
+.authenticated-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 280px;
+  padding: 32px;
+  background: #f5f7fa;
+}
