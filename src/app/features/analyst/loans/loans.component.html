@@ -1,4 +1,40 @@
-<div class="page-container">
-  <h1>Loans</h1>
-  <p>Analyst only - Manage loan applications</p>
+<div class="workspace">
+  <div class="workspace-header">
+    <div class="header-titles">
+      <h1>Loan Portfolio</h1>
+      <p class="subtitle">All active loan arrangements aggregated across credit dossiers.</p>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="feedback-toast error">{{ errorMessage }}</div>
+
+  <div class="card table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Dossier SIREN</th>
+          <th>Capital Amount</th>
+          <th>Interest Rate</th>
+          <th>Term</th>
+          <th>Frequency</th>
+          <th>Est. Monthly Payment</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let loan of loans">
+          <td><code>{{ loan.dossier?.siren }}</code></td>
+          <td><strong>{{ loan.amount | currency:'EUR':'symbol':'1.0-0' }}</strong></td>
+          <td>{{ loan.interestRate }}%</td>
+          <td>{{ loan.termMonths }} months</td>
+          <td class="capitalize">{{ loan.paymentFrequency }}</td>
+          <td class="font-mono">{{ monthlyPayment(loan) | currency:'EUR':'symbol':'1.0-2' }}</td>
+          <td><span class="status-pill" [ngClass]="loan.status">{{ loan.status }}</span></td>
+        </tr>
+        <tr *ngIf="loans.length === 0 && !isLoading">
+          <td colspan="7" class="empty-state">No loan arrangements found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

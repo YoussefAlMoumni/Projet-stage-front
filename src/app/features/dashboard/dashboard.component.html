@@ -1,4 +1,111 @@
-<div class="page-container">
-  <h1>Dashboard</h1>
-  <p>Welcome to the Credit Platform</p>
+<div class="dashboard">
+  <div class="welcome-banner">
+    <div class="welcome-text">
+      <p class="greeting">Welcome back,</p>
+      <h1>{{ username }}</h1>
+      <p class="role-tag">{{ role | titlecase }} Access</p>
+    </div>
+    <div class="brand-visual">
+      <div class="logo-mark">CF</div>
+      <span>CreditFlow Platform</span>
+    </div>
+  </div>
+
+  <!-- KPI Stats Row -->
+  <div class="stats-grid">
+    <div class="stat-card card">
+      <div class="stat-icon">📁</div>
+      <div class="stat-info">
+        <span class="stat-val">{{ stats.totalDossiers }}</span>
+        <span class="stat-lbl">Total Dossiers</span>
+      </div>
+    </div>
+    <div class="stat-card card pending">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-info">
+        <span class="stat-val">{{ stats.pendingDossiers }}</span>
+        <span class="stat-lbl">Pending Review</span>
+      </div>
+    </div>
+    <div class="stat-card card approved">
+      <div class="stat-icon">✅</div>
+      <div class="stat-info">
+        <span class="stat-val">{{ stats.approvedDossiers }}</span>
+        <span class="stat-lbl">Approved</span>
+      </div>
+    </div>
+    <div class="stat-card card volume">
+      <div class="stat-icon">💰</div>
+      <div class="stat-info">
+        <span class="stat-val">{{ stats.totalLoanVolume | currency:'EUR':'symbol':'1.0-0' }}</span>
+        <span class="stat-lbl">Total Loan Volume</span>
+      </div>
+    </div>
+    <div class="stat-card card collateral">
+      <div class="stat-icon">🏦</div>
+      <div class="stat-info">
+        <span class="stat-val">{{ stats.totalCollateralValue | currency:'EUR':'symbol':'1.0-0' }}</span>
+        <span class="stat-lbl">Collateral Coverage</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Dossiers -->
+  <div class="section-header">
+    <h2>Recent Credit Requests</h2>
+    <button (click)="navigateTo('/dossiers')" class="btn-link">View All →</button>
+  </div>
+
+  <div class="card table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>SIREN</th>
+          <th>Client Type</th>
+          <th>Loan Amount</th>
+          <th>Status</th>
+          <th>Analyst</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of recentDossiers">
+          <td><strong>{{ d.siren }}</strong></td>
+          <td><span class="client-pill" [ngClass]="d.clientType">{{ d.clientType }}</span></td>
+          <td>{{ d.loans?.[0]?.amount | currency:'EUR':'symbol':'1.0-0' }}</td>
+          <td><span class="status-pill" [ngClass]="d.status">{{ d.status }}</span></td>
+          <td>{{ d.assignedAnalyst?.username || 'Unassigned' }}</td>
+        </tr>
+        <tr *ngIf="recentDossiers.length === 0 && !isLoading">
+          <td colspan="5" class="empty-state">No dossiers filed yet. <button (click)="navigateTo('/dossiers')" class="inline-link">Create the first one →</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="section-header">
+    <h2>Quick Actions</h2>
+  </div>
+  <div class="quick-actions">
+    <button (click)="navigateTo('/dossiers')" class="action-card card">
+      <span class="action-icon">📂</span>
+      <strong>New Credit Request</strong>
+      <span>File a new dossier intake</span>
+    </button>
+    <button *ngIf="role === 'admin'" (click)="navigateTo('/employees')" class="action-card card">
+      <span class="action-icon">👥</span>
+      <strong>Manage Employees</strong>
+      <span>Add, edit or remove staff</span>
+    </button>
+    <button *ngIf="role === 'admin'" (click)="navigateTo('/prompts')" class="action-card card">
+      <span class="action-icon">🧠</span>
+      <strong>Tune AI Agents</strong>
+      <span>Customize prompt templates</span>
+    </button>
+    <button *ngIf="role === 'manager'" (click)="navigateTo('/analysts')" class="action-card card">
+      <span class="action-icon">📊</span>
+      <strong>Analyst Overview</strong>
+      <span>View team workload</span>
+    </button>
+  </div>
 </div>

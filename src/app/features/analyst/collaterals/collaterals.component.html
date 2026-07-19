@@ -1,4 +1,55 @@
-<div class="page-container">
-  <h1>Collaterals</h1>
-  <p>Analyst only - Manage collateral assets</p>
+<div class="workspace">
+  <div class="workspace-header">
+    <div class="header-titles">
+      <h1>Collateral Register</h1>
+      <p class="subtitle">All secured guarantee assets across the credit portfolio with coverage analysis.</p>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="feedback-toast error">{{ errorMessage }}</div>
+
+  <div class="card table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Dossier SIREN</th>
+          <th>Asset Class</th>
+          <th>Description</th>
+          <th>Estimated Value</th>
+          <th>Loan Amount</th>
+          <th>Coverage Ratio</th>
+          <th>Valuation Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of collaterals">
+          <td><code>{{ c.loan?.dossierSiren }}</code></td>
+          <td><span class="asset-pill" [ngClass]="c.type">{{ c.type.replace('_', ' ') }}</span></td>
+          <td class="desc-cell">{{ c.description || '—' }}</td>
+          <td><strong>{{ c.estimatedValue | currency:'EUR':'symbol':'1.0-0' }}</strong></td>
+          <td>{{ c.loan?.amount | currency:'EUR':'symbol':'1.0-0' }}</td>
+          <td>
+            <div class="coverage-bar-wrap">
+              <div class="coverage-bar">
+                <div class="coverage-fill"
+                     [style.width.%]="coverageRatio(c) > 100 ? 100 : coverageRatio(c)"
+                     [class.over-covered]="coverageRatio(c) >= 100"
+                     [class.under-covered]="coverageRatio(c) < 80">
+                </div>
+              </div>
+              <span class="coverage-label" [class.good]="coverageRatio(c) >= 100" [class.warn]="coverageRatio(c) < 80">
+                {{ coverageRatio(c) | number:'1.0-0' }}%
+              </span>
+            </div>
+          </td>
+          <td>{{ c.valuationDate | date:'mediumDate' }}</td>
+          <td><span class="status-pill" [ngClass]="c.status">{{ c.status }}</span></td>
+        </tr>
+        <tr *ngIf="collaterals.length === 0 && !isLoading">
+          <td colspan="8" class="empty-state">No collateral assets found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

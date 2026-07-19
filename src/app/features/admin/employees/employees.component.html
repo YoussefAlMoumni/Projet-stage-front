@@ -1,4 +1,151 @@
-<div class="page-container">
-  <h1>Employees Management</h1>
-  <p>Admin only - Manage employee accounts</p>
+<div class="workspace">
+  <div class="workspace-header">
+    <div class="header-titles">
+      <h1>Employee Directory</h1>
+      <p class="subtitle">Manage user profiles, credential parameters, and operational roles.</p>
+    </div>
+    <button (click)="openCreateModal()" class="btn-primary">Add Employee</button>
+  </div>
+
+  <div *ngIf="successMessage" class="feedback-toast success">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="feedback-toast error">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Employees Table -->
+  <div class="card table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Full Name</th>
+          <th>Email Address</th>
+          <th>Phone Number</th>
+          <th>National ID</th>
+          <th>Role</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>
+            <div class="username-cell">
+              <span class="user-badge" [ngClass]="user.role">{{ user.role.substring(0, 2).toUpperCase() }}</span>
+              <strong>{{ user.username }}</strong>
+            </div>
+          </td>
+          <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.phoneNumber || 'N/A' }}</td>
+          <td><code>{{ user.nationalId }}</code></td>
+          <td><span class="role-pill" [ngClass]="user.role">{{ user.role }}</span></td>
+          <td class="actions-cell">
+            <button (click)="openEditModal(user)" class="btn-icon-action" title="Edit Profile">✏️</button>
+            <button (click)="deleteUser(user.id!)" class="btn-icon-action delete" title="Delete Profile">🗑️</button>
+          </td>
+        </tr>
+        <tr *ngIf="users.length === 0 && !isLoading">
+          <td colspan="7" class="empty-state">No employees found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Create/Edit Overlay Dialog -->
+  <div *ngIf="showModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>{{ isEditMode ? 'Edit Employee Details' : 'Add New Employee' }}</h2>
+        <button (click)="showModal = false" class="close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body form-grid">
+        <!-- Account Info Section -->
+        <div class="form-section">
+          <h3>Account Credentials</h3>
+          <div class="form-group">
+            <label for="username">Username *</label>
+            <input type="text" id="username" [(ngModel)]="currentUser.username" placeholder="e.g. jdoe" [disabled]="isEditMode" />
+            <span class="field-error" *ngIf="errors.username">{{ errors.username }}</span>
+          </div>
+
+          <div class="form-group" *ngIf="!isEditMode">
+            <label for="password">Password *</label>
+            <input type="password" id="password" [(ngModel)]="currentUser.password" placeholder="Min 12 chars, upper, special" />
+            <span class="field-error" *ngIf="errors.password">{{ errors.password }}</span>
+          </div>
+
+          <div class="form-group">
+            <label for="role">Role Authorization *</label>
+            <select id="role" [(ngModel)]="currentUser.role">
+              <option value="admin">Administrator</option>
+              <option value="manager">Manager / Supervisor</option>
+              <option value="analyst">Analyst</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Personal Info Section -->
+        <div class="form-section">
+          <h3>Personal Details</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">First Name *</label>
+              <input type="text" id="firstName" [(ngModel)]="currentUser.firstName" placeholder="John" />
+              <span class="field-error" *ngIf="errors.firstName">{{ errors.firstName }}</span>
+            </div>
+            <div class="form-group">
+              <label for="lastName">Last Name *</label>
+              <input type="text" id="lastName" [(ngModel)]="currentUser.lastName" placeholder="Doe" />
+              <span class="field-error" *ngIf="errors.lastName">{{ errors.lastName }}</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input type="email" id="email" [(ngModel)]="currentUser.email" placeholder="john.doe@talan.com" />
+            <span class="field-error" *ngIf="errors.email">{{ errors.email }}</span>
+          </div>
+
+          <div class="form-group">
+            <label for="phoneNumber">Phone Number (E.164 format)</label>
+            <input type="text" id="phoneNumber" [(ngModel)]="currentUser.phoneNumber" placeholder="+33612345678" />
+            <span class="field-error" *ngIf="errors.phoneNumber">{{ errors.phoneNumber }}</span>
+          </div>
+
+          <div class="form-group">
+            <label for="nationalId">National ID / Identifier *</label>
+            <input type="text" id="nationalId" [(ngModel)]="currentUser.nationalId" placeholder="NID-123456" />
+            <span class="field-error" *ngIf="errors.nationalId">{{ errors.nationalId }}</span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="gender">Gender</label>
+              <select id="gender" [(ngModel)]="currentUser.gender">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="salary">Base Salary (€)</label>
+              <input type="number" id="salary" [(ngModel)]="currentUser.salary" />
+              <span class="field-error" *ngIf="errors.salary">{{ errors.salary }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="saveUser()" [disabled]="isLoading" class="btn-primary">
+          {{ isEditMode ? 'Save Changes' : 'Create Profile' }}
+        </button>
+        <button (click)="showModal = false" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
 </div>

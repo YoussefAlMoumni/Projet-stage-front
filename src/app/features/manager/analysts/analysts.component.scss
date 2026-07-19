@@ -1,10 +1,138 @@
-.page-container {
+.workspace {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.workspace-header {
+  margin-bottom: 30px;
+
   h1 {
-    color: #1e3a5f;
-    margin-bottom: 8px;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    color: var(--primary);
   }
-  
-  p {
-    color: #64748b;
+
+  .subtitle {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
   }
+}
+
+.feedback-toast.error {
+  background: #feeaea;
+  color: #d32f2f;
+  border: 1px solid #f8c8c8;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.analysts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.card { background: #fff; border-radius: 16px; border: 1px solid var(--line); box-shadow: var(--shadow); }
+
+.analyst-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(24, 21, 25, 0.1);
+  }
+}
+
+.analyst-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: #fff;
+
+  &.analyst { background: linear-gradient(135deg, #059669, #34d399); }
+  &.manager { background: linear-gradient(135deg, #ea580c, #fb923c); }
+  &.admin { background: linear-gradient(135deg, #4f46e5, #818cf8); }
+}
+
+.analyst-info {
+  flex: 1;
+
+  h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .analyst-username {
+    margin: 0 0 2px 0;
+    font-size: 13px;
+    color: var(--muted);
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  .analyst-email {
+    margin: 0;
+    font-size: 12px;
+    color: var(--muted);
+  }
+}
+
+.analyst-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary);
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.role-pill {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+
+  &.analyst { background: #ecfdf5; color: #059669; }
+  &.manager { background: #fff7ed; color: #ea580c; }
+}
+
+.empty-card {
+  padding: 48px;
+  text-align: center;
+  color: var(--muted);
 }
