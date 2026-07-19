@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { LoginComponent } from './features/auth/login/login.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { AuthenticatedLayoutComponent } from './shared/layouts/authenticated-layout/authenticated-layout.component';
 import { EmployeesComponent } from './features/admin/employees/employees.component';
@@ -15,6 +16,10 @@ export const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent
+  },
+  {
+    path: 'forgot-password',
+    component: ForgotPasswordComponent
   },
   {
     path: '',

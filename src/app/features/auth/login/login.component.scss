@@ -61,6 +61,24 @@
   }
 }
 
+.forgot-link-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.forgot-link {
+  font-size: 12px;
+  color: #ff7a1a;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #e06000;
+  }
+}
+
 .error-message {
   color: #ef4444;
   font-size: 14px;

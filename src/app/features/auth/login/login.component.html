@@ -26,6 +26,9 @@
           required
           placeholder="Enter your password"
         />
+        <div class="forgot-link-container">
+          <a href="javascript:void(0)" (click)="goToForgotPassword()" class="forgot-link">Forgot Password?</a>
+        </div>
       </div>
       
       <div *ngIf="errorMessage" class="error-message">
