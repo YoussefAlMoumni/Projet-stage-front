@@ -1,40 +1,47 @@
 <div class="workspace">
-  <!-- Top level errors and toasts -->
+  <!-- Toasts -->
   <div *ngIf="successMessage" class="feedback-toast success">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="feedback-toast error">{{ errorMessage }}</div>
+  <div *ngIf="errorMessage"   class="feedback-toast error">{{ errorMessage }}</div>
 
-  <!-- 1. DOSSIER LOOKUP LIST VIEW -->
+  <!-- ─── LIST VIEW ──────────────────────────────────────────────── -->
   <div *ngIf="viewMode === 'list'">
     <div class="workspace-header">
       <div class="header-titles">
-        <h1>Credit Dossiers Directory</h1>
-        <p class="subtitle">Search, evaluate, and browse active credit dossiers, loans, and collaterals.</p>
+        <h1>Credit dossiers</h1>
+        <p>Search, evaluate, and browse active credit dossiers, loans, and collaterals.</p>
       </div>
-      <button (click)="openCreateForm()" class="btn-primary">New Credit Request</button>
+      <button (click)="openCreateForm()" class="btn-primary">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New request
+      </button>
     </div>
 
     <div class="card table-container">
       <table class="data-table">
         <thead>
           <tr>
-            <th>SIREN / Identifier</th>
-            <th>Client Type</th>
-            <th>Requested Amount</th>
+            <th>SIREN</th>
+            <th>Client type</th>
+            <th>Amount</th>
             <th>Status</th>
-            <th>Assigned Analyst</th>
-            <th class="actions-col">Actions</th>
+            <th>Analyst</th>
+            <th class="col-actions">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let dossier of dossiers" class="clickable-row">
-            <td (click)="viewDossierDetails(dossier)"><strong>{{ dossier.siren }}</strong></td>
+            <td (click)="viewDossierDetails(dossier)"><span class="mono-cell">{{ dossier.siren }}</span></td>
             <td (click)="viewDossierDetails(dossier)"><span class="client-pill" [ngClass]="dossier.clientType">{{ dossier.clientType }}</span></td>
             <td (click)="viewDossierDetails(dossier)">{{ dossier.loans[0]?.amount | currency:'EUR':'symbol':'1.0-0' }}</td>
             <td (click)="viewDossierDetails(dossier)"><span class="status-pill" [ngClass]="dossier.status">{{ dossier.status }}</span></td>
-            <td (click)="viewDossierDetails(dossier)">{{ dossier.assignedAnalyst?.username || 'Unassigned' }}</td>
+            <td (click)="viewDossierDetails(dossier)" class="muted-cell">{{ dossier.assignedAnalyst?.username || 'Unassigned' }}</td>
             <td class="actions-cell">
-              <button (click)="viewDossierDetails(dossier)" class="btn-icon-action" title="View details">📂</button>
-              <button (click)="deleteDossier(dossier.id!)" class="btn-icon-action delete" title="Delete request">🗑️</button>
+              <button (click)="viewDossierDetails(dossier)" class="action-btn" title="View details">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <button (click)="deleteDossier(dossier.id!)" class="action-btn danger" title="Delete">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              </button>
             </td>
           </tr>
           <tr *ngIf="dossiers.length === 0 && !isLoading">
@@ -45,92 +52,107 @@
     </div>
   </div>
 
-  <!-- 2. CREATE DOSSIER MULTI-STEP INTAKE -->
+  <!-- ─── CREATE WIZARD ──────────────────────────────────────────── -->
   <div *ngIf="viewMode === 'create'" class="form-wizard">
     <div class="workspace-header">
       <div class="header-titles">
-        <h1>New Credit Request Intake</h1>
-        <p class="subtitle">Step {{ formStep }} of 3: {{ formStep === 1 ? 'Client Identification' : formStep === 2 ? 'Loan Terms' : 'Collateral Assets' }}</p>
+        <h1>New credit request</h1>
+        <p>Step {{ formStep }} of 3 — {{ formStep === 1 ? 'Client identification' : formStep === 2 ? 'Loan terms' : 'Collateral assets' }}</p>
       </div>
       <button (click)="viewMode = 'list'" class="btn-secondary">Cancel</button>
     </div>
 
-    <!-- Wizard Steps Indicator -->
-    <div class="steps-indicator">
-      <span class="step-badge" [class.active]="formStep >= 1">1</span>
-      <span class="step-line" [class.active]="formStep >= 2"></span>
-      <span class="step-badge" [class.active]="formStep >= 2">2</span>
-      <span class="step-line" [class.active]="formStep >= 3"></span>
-      <span class="step-badge" [class.active]="formStep >= 3">3</span>
+    <!-- Progress -->
+    <div class="steps-bar">
+      <div class="step" [class.active]="formStep >= 1" [class.done]="formStep > 1">
+        <div class="step-dot">
+          <svg *ngIf="formStep > 1" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span *ngIf="formStep <= 1">1</span>
+        </div>
+        <span class="step-label">Identification</span>
+      </div>
+      <div class="step-connector" [class.active]="formStep >= 2"></div>
+      <div class="step" [class.active]="formStep >= 2" [class.done]="formStep > 2">
+        <div class="step-dot">
+          <svg *ngIf="formStep > 2" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span *ngIf="formStep <= 2">2</span>
+        </div>
+        <span class="step-label">Loan terms</span>
+      </div>
+      <div class="step-connector" [class.active]="formStep >= 3"></div>
+      <div class="step" [class.active]="formStep >= 3">
+        <div class="step-dot"><span>3</span></div>
+        <span class="step-label">Collateral</span>
+      </div>
     </div>
 
     <div class="card wizard-card">
-      <!-- Step 1: Identification -->
+      <!-- Step 1 -->
       <div *ngIf="formStep === 1" class="wizard-step">
-        <h3>Client Identification</h3>
+        <h3>Client identification</h3>
         <div class="form-group">
-          <label for="siren">Company SIREN Code *</label>
+          <label for="siren">Company SIREN code *</label>
           <input type="text" id="siren" [(ngModel)]="newDossier.siren" placeholder="e.g. 123456789" required />
         </div>
         <div class="form-group">
-          <label for="clientType">Client Profile Class</label>
+          <label for="clientType">Client profile</label>
           <select id="clientType" [(ngModel)]="newDossier.clientType">
-            <option value="corporate">Corporate Entity</option>
-            <option value="individual">Individual Professional</option>
+            <option value="corporate">Corporate entity</option>
+            <option value="individual">Individual professional</option>
           </select>
         </div>
       </div>
 
-      <!-- Step 2: Loan Terms -->
+      <!-- Step 2 -->
       <div *ngIf="formStep === 2" class="wizard-step">
-        <h3>Loan Hyperparameters & Terms</h3>
+        <h3>Loan terms</h3>
         <div class="form-group">
-          <label for="amount">Requested Capital Amount (€) *</label>
+          <label for="amount">Capital amount (€) *</label>
           <input type="number" id="amount" [(ngModel)]="newDossier.loans[0].amount" />
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="interestRate">Interest Rate (%) *</label>
+            <label for="interestRate">Interest rate (%) *</label>
             <input type="number" id="interestRate" step="0.05" [(ngModel)]="newDossier.loans[0].interestRate" />
           </div>
           <div class="form-group">
-            <label for="termMonths">Amortization Period (Months) *</label>
+            <label for="termMonths">Amortization (months) *</label>
             <input type="number" id="termMonths" [(ngModel)]="newDossier.loans[0].termMonths" />
           </div>
         </div>
         <div class="form-group">
-          <label for="paymentFrequency">Payment Period Frequency</label>
+          <label for="paymentFrequency">Payment frequency</label>
           <select id="paymentFrequency" [(ngModel)]="newDossier.loans[0].paymentFrequency">
-            <option value="monthly">Monthly Amortization</option>
-            <option value="quarterly">Quarterly Amortization</option>
-            <option value="annual">Annual Amortization</option>
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="annual">Annual</option>
           </select>
         </div>
       </div>
 
-      <!-- Step 3: Collateral Assets -->
+      <!-- Step 3 -->
       <div *ngIf="formStep === 3" class="wizard-step">
-        <h3>Secured Guarantee / Collateral Asset</h3>
+        <h3>Collateral asset</h3>
         <div class="form-group">
-          <label for="c-type">Collateral Asset Category</label>
+          <label for="c-type">Asset category</label>
           <select id="c-type" [(ngModel)]="newDossier.loans[0].collaterals[0].type">
-            <option value="real_estate">Real Estate Property</option>
-            <option value="equipment">Industrial Equipment</option>
-            <option value="securities">Financial Securities</option>
-            <option value="guarantee">Cash Guarantee</option>
+            <option value="real_estate">Real estate</option>
+            <option value="equipment">Industrial equipment</option>
+            <option value="securities">Financial securities</option>
+            <option value="guarantee">Cash guarantee</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="c-desc">Asset Description / Assessment Details *</label>
-          <input type="text" id="c-desc" [(ngModel)]="newDossier.loans[0].collaterals[0].description" placeholder="Address, serial numbers, valuation particulars..." />
+          <label for="c-desc">Asset description *</label>
+          <input type="text" id="c-desc" [(ngModel)]="newDossier.loans[0].collaterals[0].description" placeholder="Address, serial numbers, valuation details…" />
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="c-value">Estimated Asset Value (€) *</label>
+            <label for="c-value">Estimated value (€) *</label>
             <input type="number" id="c-value" [(ngModel)]="newDossier.loans[0].collaterals[0].estimatedValue" />
           </div>
           <div class="form-group">
-            <label for="c-date">Assessment Valuation Date *</label>
+            <label for="c-date">Valuation date *</label>
             <input type="date" id="c-date" [(ngModel)]="newDossier.loans[0].collaterals[0].valuationDate" />
           </div>
         </div>
@@ -138,158 +160,163 @@
 
       <div class="wizard-footer">
         <button *ngIf="formStep > 1" (click)="prevStep()" class="btn-secondary">Back</button>
-        <button *ngIf="formStep < 3" (click)="nextStep()" class="btn-primary">Next Step</button>
-        <button *ngIf="formStep === 3" (click)="saveDossier()" [disabled]="isLoading" class="btn-primary">File Request</button>
+        <button *ngIf="formStep < 3" (click)="nextStep()" class="btn-primary">Next</button>
+        <button *ngIf="formStep === 3" (click)="saveDossier()" [disabled]="isLoading" class="btn-primary">File request</button>
       </div>
     </div>
   </div>
 
-  <!-- 3. COMPREHENSIVE DOSSIER DETAIL PANEL & AI DECISION WORKSPACE -->
-  <div *ngIf="viewMode === 'detail' && selectedDossier" class="dossier-workspace">
+  <!-- ─── DETAIL VIEW ────────────────────────────────────────────── -->
+  <div *ngIf="viewMode === 'detail' && selectedDossier" class="detail-workspace">
     <div class="workspace-header">
       <div class="header-titles">
-        <div class="header-badge-row">
-          <span class="status-pill big" [ngClass]="selectedDossier.status">{{ selectedDossier.status }}</span>
-          <h1>Dossier #{{ selectedDossier.siren }}</h1>
+        <div class="detail-title-row">
+          <span class="status-pill" [ngClass]="selectedDossier.status">{{ selectedDossier.status }}</span>
+          <h1>Dossier {{ selectedDossier.siren }}</h1>
         </div>
-        <p class="subtitle">Assigned Analyst: <strong>{{ selectedDossier.assignedAnalyst?.username || 'Unassigned' }}</strong></p>
+        <p>Analyst: <strong>{{ selectedDossier.assignedAnalyst?.username || 'Unassigned' }}</strong></p>
       </div>
-      <button (click)="viewMode = 'list'" class="btn-secondary">Back to Directory</button>
+      <button (click)="viewMode = 'list'" class="btn-secondary">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back
+      </button>
     </div>
 
-    <div class="detail-grid">
-      <!-- Left: Dossier Fact Sheets & Tabs -->
-      <div class="facts-panel">
-        <div class="detail-tabs">
-          <button (click)="activeDetailTab = 'overview'" [class.active]="activeDetailTab === 'overview'">Request Info</button>
-          <button (click)="activeDetailTab = 'loans'" [class.active]="activeDetailTab === 'loans'">Loan Parameters</button>
+    <div class="detail-layout">
+      <!-- Left: tabs + content -->
+      <div class="detail-main">
+        <div class="tab-strip">
+          <button (click)="activeDetailTab = 'overview'"    [class.active]="activeDetailTab === 'overview'">Overview</button>
+          <button (click)="activeDetailTab = 'loans'"       [class.active]="activeDetailTab === 'loans'">Loan parameters</button>
           <button (click)="activeDetailTab = 'collaterals'" [class.active]="activeDetailTab === 'collaterals'">Guarantees</button>
-          <button (click)="activeDetailTab = 'decision'" [class.active]="activeDetailTab === 'decision'">Smart Decision Audit</button>
+          <button (click)="activeDetailTab = 'decision'"    [class.active]="activeDetailTab === 'decision'">AI decision</button>
         </div>
 
-        <div class="card detail-content">
-          <!-- Overview Tab -->
+        <div class="card tab-content">
+          <!-- Overview -->
           <div *ngIf="activeDetailTab === 'overview'" class="tab-pane">
-            <h3>Dossier Metadata</h3>
+            <h3 class="pane-title">Dossier metadata</h3>
             <div class="meta-grid">
-              <div class="meta-item"><span class="label">SIREN:</span><span class="value">{{ selectedDossier.siren }}</span></div>
-              <div class="meta-item"><span class="label">Client Class:</span><span class="value capitalize">{{ selectedDossier.clientType }}</span></div>
-              <div class="meta-item"><span class="label">Intake Date:</span><span class="value">{{ selectedDossier.creationDate | date:'medium' }}</span></div>
-              <div class="meta-item"><span class="label">Approval Status:</span><span class="value capitalize">{{ selectedDossier.status }}</span></div>
+              <div class="meta-row"><span class="meta-label">SIREN</span><span class="meta-value mono-text">{{ selectedDossier.siren }}</span></div>
+              <div class="meta-row"><span class="meta-label">Client class</span><span class="meta-value">{{ selectedDossier.clientType }}</span></div>
+              <div class="meta-row"><span class="meta-label">Intake date</span><span class="meta-value">{{ selectedDossier.creationDate | date:'mediumDate' }}</span></div>
+              <div class="meta-row"><span class="meta-label">Status</span><span class="meta-value"><span class="status-pill" [ngClass]="selectedDossier.status">{{ selectedDossier.status }}</span></span></div>
             </div>
           </div>
 
-          <!-- Loans Tab -->
+          <!-- Loans -->
           <div *ngIf="activeDetailTab === 'loans'" class="tab-pane">
-            <h3>Financing Parameters</h3>
-            <div class="loans-list" *ngFor="let loan of selectedDossier.loans; let idx = index">
-              <div class="loan-card-detail">
-                <h4>Loan #{{ idx + 1 }}</h4>
-                <div class="meta-grid">
-                  <div class="meta-item"><span class="label">Capital:</span><span class="value font-bold">{{ loan.amount | currency:'EUR' }}</span></div>
-                  <div class="meta-item"><span class="label">Nominal Rate:</span><span class="value">{{ loan.interestRate }}%</span></div>
-                  <div class="meta-item"><span class="label">Amortization:</span><span class="value">{{ loan.termMonths }} Months</span></div>
-                  <div class="meta-item"><span class="label">Frequency:</span><span class="value capitalize">{{ loan.paymentFrequency }}</span></div>
-                </div>
+            <h3 class="pane-title">Financing parameters</h3>
+            <div class="data-list" *ngFor="let loan of selectedDossier.loans; let idx = index">
+              <div class="data-list-header">Loan #{{ idx + 1 }}</div>
+              <div class="meta-grid">
+                <div class="meta-row"><span class="meta-label">Capital</span><span class="meta-value bold">{{ loan.amount | currency:'EUR' }}</span></div>
+                <div class="meta-row"><span class="meta-label">Rate</span><span class="meta-value">{{ loan.interestRate }}%</span></div>
+                <div class="meta-row"><span class="meta-label">Amortization</span><span class="meta-value">{{ loan.termMonths }} months</span></div>
+                <div class="meta-row"><span class="meta-label">Frequency</span><span class="meta-value">{{ loan.paymentFrequency }}</span></div>
               </div>
             </div>
           </div>
 
-          <!-- Collaterals Tab -->
+          <!-- Collaterals -->
           <div *ngIf="activeDetailTab === 'collaterals'" class="tab-pane">
-            <h3>Secured Guarantee Assets</h3>
-            <div class="collateral-list" *ngFor="let loan of selectedDossier.loans">
-              <div class="loan-card-detail" *ngFor="let c of loan.collaterals; let cIdx = index">
-                <h4>Guarantee #{{ cIdx + 1 }}</h4>
+            <h3 class="pane-title">Secured guarantees</h3>
+            <div *ngFor="let loan of selectedDossier.loans">
+              <div class="data-list" *ngFor="let c of loan.collaterals; let cIdx = index">
+                <div class="data-list-header">Guarantee #{{ cIdx + 1 }}</div>
                 <div class="meta-grid">
-                  <div class="meta-item"><span class="label">Asset Class:</span><span class="value capitalize">{{ c.type }}</span></div>
-                  <div class="meta-item"><span class="label">Estimated Value:</span><span class="value">{{ c.estimatedValue | currency:'EUR' }}</span></div>
-                  <div class="meta-item"><span class="label">Valuation Date:</span><span class="value">{{ c.valuationDate | date }}</span></div>
-                  <div class="meta-item"><span class="label">Status:</span><span class="value capitalize">{{ c.status }}</span></div>
+                  <div class="meta-row"><span class="meta-label">Asset class</span><span class="meta-value">{{ c.type }}</span></div>
+                  <div class="meta-row"><span class="meta-label">Estimated value</span><span class="meta-value">{{ c.estimatedValue | currency:'EUR' }}</span></div>
+                  <div class="meta-row"><span class="meta-label">Valuation date</span><span class="meta-value">{{ c.valuationDate | date }}</span></div>
+                  <div class="meta-row"><span class="meta-label">Status</span><span class="meta-value">{{ c.status }}</span></div>
                 </div>
-                <div class="asset-description">
-                  <span class="label">Description:</span>
+                <div class="description-block">
+                  <span class="meta-label">Description</span>
                   <p>{{ c.description }}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Decision Tab -->
+          <!-- Decision -->
           <div *ngIf="activeDetailTab === 'decision'" class="tab-pane">
-            <!-- Loading Indicator during evaluation -->
-            <div *ngIf="isEvaluating" class="evaluation-loader">
-              <div class="progress-bar-container">
-                <div class="progress-bar" [style.width.%]="evaluationProgress"></div>
+            <!-- Loading state -->
+            <div *ngIf="isEvaluating" class="eval-loader">
+              <div class="eval-progress-bar">
+                <div class="eval-progress-fill" [style.width.%]="evaluationProgress"></div>
               </div>
-              <div class="logs-console">
-                <div class="console-header">Pipeline Console logs ({{ evaluationProgress }}%)</div>
+              <div class="eval-console">
+                <div class="console-header">
+                  <div class="console-dots">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <span>Pipeline — {{ evaluationProgress }}%</span>
+                </div>
                 <div class="console-body">
-                  <p *ngFor="let log of evaluationLog">&gt; {{ log }}</p>
+                  <p *ngFor="let log of evaluationLog" class="console-line">&gt; {{ log }}</p>
                 </div>
               </div>
             </div>
 
-            <!-- Renders dynamic report outputs once evaluation completes -->
-            <div *ngIf="!isEvaluating && latestEvaluation" class="evaluation-report">
+            <!-- Report -->
+            <div *ngIf="!isEvaluating && latestEvaluation" class="eval-report">
               <div class="report-meta">
-                <span>Evaluated on: {{ latestEvaluation.evaluation.createdAt | date:'medium' }}</span>
-                <span>Execution Mode: <strong>{{ latestEvaluation.evaluation.executionMode }}</strong></span>
+                <span>Evaluated {{ latestEvaluation.evaluation.createdAt | date:'medium' }}</span>
+                <span class="mode-badge">{{ latestEvaluation.evaluation.executionMode }}</span>
               </div>
-              
-              <!-- Segmented Durations Grid -->
-              <div class="durations-grid">
-                <div class="duration-badge" *ngFor="let sr of latestEvaluation.stageResults">
-                  <span class="stage-tag capitalize">{{ sr.stageName }}</span>
-                  <span class="duration-time">{{ sr.durationMs }}ms</span>
+
+              <div class="stage-timings">
+                <div class="timing-item" *ngFor="let sr of latestEvaluation.stageResults">
+                  <span class="timing-stage">{{ sr.stageName }}</span>
+                  <span class="timing-ms">{{ sr.durationMs }}ms</span>
                 </div>
               </div>
 
-              <!-- Collapsible Sub-agent Outputs Accordion -->
-              <div class="sub-agent-accordion">
-                <h4>AI Specialists Report Breakdown</h4>
-                <details *ngFor="let stage of latestEvaluation.stageResults">
-                  <summary class="capitalize">{{ stage.stageName }} Specialist Output</summary>
-                  <div class="details-content-box">
-                    <pre>{{ stage.output }}</pre>
+              <div class="accordion-section">
+                <h4 class="section-label">Specialist outputs</h4>
+                <details *ngFor="let stage of latestEvaluation.stageResults" class="accordion-item">
+                  <summary class="accordion-summary">{{ stage.stageName | titlecase }} specialist</summary>
+                  <div class="accordion-body">
+                    <pre class="output-pre">{{ stage.output }}</pre>
                   </div>
                 </details>
               </div>
 
-              <!-- Core Decision Markdown render -->
-              <div class="markdown-report">
-                <h4>Consolidated Director Audit Decision</h4>
+              <div class="markdown-area">
+                <h4 class="section-label">Consolidated decision report</h4>
                 <div class="report-body" [innerHTML]="parseMarkdown(latestEvaluation.evaluation.supervisorStageOutput)"></div>
               </div>
             </div>
 
-            <!-- Empty decision state -->
+            <!-- Empty -->
             <div *ngIf="!isEvaluating && !latestEvaluation" class="empty-state">
-              <p>No evaluation report has been triggered for this dossier yet.</p>
+              No evaluation has been run for this dossier yet.
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Right: Decision Trigger Panel -->
-      <div class="actions-panel">
-        <div class="card panel-card">
+      <!-- Right: trigger panel -->
+      <div class="decision-panel">
+        <div class="card panel-inner">
           <h3>Smart Decision Engine</h3>
-          <p class="panel-desc">Execute autonomous agent consensus reviews to evaluate client risk parameters and generate auditable reports.</p>
-          
-          <div class="mode-toggles">
-            <button (click)="evalMode = 'FAST'" [class.active]="evalMode === 'FAST'">
-              <strong>FAST MODE</strong>
-              <span>Immediate CPU release</span>
+          <p class="panel-desc">Execute the autonomous AI agent pipeline to generate an auditable credit evaluation report.</p>
+
+          <div class="mode-selector">
+            <button (click)="evalMode = 'FAST'" [class.active]="evalMode === 'FAST'" class="mode-btn">
+              <strong>FAST</strong>
+              <span>Immediate release</span>
             </button>
-            <button (click)="evalMode = 'FULL'" [class.active]="evalMode === 'FULL'">
-              <strong>FULL MODE</strong>
-              <span>Deep context audit</span>
+            <button (click)="evalMode = 'FULL'" [class.active]="evalMode === 'FULL'" class="mode-btn">
+              <strong>FULL</strong>
+              <span>Deep audit</span>
             </button>
           </div>
 
-          <button (click)="triggerSmartDecision()" [disabled]="isEvaluating" class="btn-primary trigger-btn">
-            {{ isEvaluating ? 'Evaluating Pipeline...' : 'Run consensus Pipeline' }}
+          <button (click)="triggerSmartDecision()" [disabled]="isEvaluating" class="btn-primary run-btn">
+            <svg *ngIf="!isEvaluating" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <svg *ngIf="isEvaluating" class="spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            {{ isEvaluating ? 'Running pipeline…' : 'Run consensus pipeline' }}
           </button>
         </div>
       </div>

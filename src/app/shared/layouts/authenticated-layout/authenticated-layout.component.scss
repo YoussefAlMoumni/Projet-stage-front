@@ -4,8 +4,9 @@
 }
 
 .main-content {
+  margin-left: 240px;
   flex: 1;
-  margin-left: 280px;
   padding: 32px;
-  background: #f5f7fa;
+  min-height: 100vh;
+  background: var(--bg);
 }

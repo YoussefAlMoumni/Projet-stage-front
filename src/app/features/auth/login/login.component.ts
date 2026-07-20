@@ -34,7 +34,8 @@ export class LoginComponent {
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
-        this.errorMessage = 'Invalid credentials';
+        console.error('Login error:', error);
+        this.errorMessage = error.error?.message || 'Invalid credentials';
         this.isLoading = false;
       }
     });

@@ -1,108 +1,80 @@
 <div class="workspace">
   <div class="workspace-header">
-    <div class="header-titles">
-      <h1>AI Agents Prompt Tuning</h1>
-      <p class="subtitle">Customize prompt templates, LLM model parameters, context sizes, and temperature settings per sub-agent.</p>
-    </div>
+    <h1>AI agent prompt tuning</h1>
+    <p>Customize prompt templates, model parameters, context windows, and temperature settings per sub-agent stage.</p>
   </div>
 
-  <div *ngIf="successMessage" class="feedback-toast success">
-    {{ successMessage }}
-  </div>
+  <div *ngIf="successMessage" class="feedback-toast success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage"   class="feedback-toast error">{{ errorMessage }}</div>
 
-  <div *ngIf="errorMessage" class="feedback-toast error">
-    {{ errorMessage }}
-  </div>
-
-  <div class="prompt-workspace">
-    <!-- Stage Selector Tabs -->
-    <div class="tabs-bar">
-      <button 
-        *ngFor="let stage of stages" 
-        (click)="activeStage = stage" 
+  <div class="prompt-layout">
+    <!-- Stage nav -->
+    <div class="stage-nav">
+      <button
+        *ngFor="let stage of stages"
+        (click)="activeStage = stage"
         [class.active]="activeStage === stage"
-        class="tab-btn">
+        class="stage-btn">
         <span class="stage-dot" [ngClass]="stage"></span>
-        <span class="tab-label">{{ stage | titlecase }}</span>
-        <span *ngIf="getConfigForStage(stage)" class="version-badge">
+        <span class="stage-label">{{ stage | titlecase }}</span>
+        <span *ngIf="getConfigForStage(stage)" class="version-chip">
           {{ getConfigForStage(stage)?.versionTag }}
         </span>
       </button>
     </div>
 
-    <!-- Tuning Form Area -->
-    <div class="card editor-card" *ngIf="getConfigForStage(activeStage) as currentConfig">
+    <!-- Editor -->
+    <div class="card editor-card" *ngIf="getConfigForStage(activeStage) as cfg">
       <div class="editor-header">
-        <div class="stage-info">
-          <h2>{{ currentConfig.stageName | titlecase }} Stage Specialist</h2>
-          <span class="version-meta" *ngIf="currentConfig.updatedAt">
-            Active version <strong>{{ currentConfig.versionTag }}</strong> &middot; Last updated: {{ currentConfig.updatedAt | date:'medium' }}
-          </span>
-        </div>
+        <h2>{{ cfg.stageName | titlecase }} stage specialist</h2>
+        <span class="version-meta" *ngIf="cfg.updatedAt">
+          Version <strong>{{ cfg.versionTag }}</strong> &middot; Updated {{ cfg.updatedAt | date:'mediumDate' }}
+        </span>
       </div>
 
       <div class="editor-grid">
-        <!-- Textarea Editor -->
+        <!-- Prompt textarea -->
         <div class="prompt-section">
-          <label for="promptText">System Instruction Template *</label>
-          <p class="field-hint">Dynamic placeholders like <code>&#123;siren&#125;</code>, <code>&#123;clientType&#125;</code>, or <code>&#123;montantDemande&#125;</code> will be injected at runtime.</p>
-          <textarea 
-            id="promptText" 
-            [(ngModel)]="currentConfig.promptText" 
-            rows="14" 
-            placeholder="Enter instructions for the agent..."></textarea>
+          <label for="promptText">System instruction template *</label>
+          <p class="field-hint">
+            Placeholders like <code>&#123;siren&#125;</code>, <code>&#123;clientType&#125;</code>, <code>&#123;montantDemande&#125;</code> are injected at runtime.
+          </p>
+          <textarea
+            id="promptText"
+            [(ngModel)]="cfg.promptText"
+            rows="16"
+            placeholder="Enter instructions for the agent…"></textarea>
         </div>
 
-        <!-- Hyperparameter Controls -->
+        <!-- Hyperparameters -->
         <div class="param-section">
           <h3>Hyperparameters</h3>
 
           <div class="form-group">
-            <label for="modelName">LLM Model Name *</label>
-            <input 
-              type="text" 
-              id="modelName" 
-              [(ngModel)]="currentConfig.modelName" 
-              placeholder="e.g. deepseek-r1:8b" />
+            <label for="modelName">LLM model *</label>
+            <input type="text" id="modelName" [(ngModel)]="cfg.modelName" placeholder="deepseek-r1:8b" />
           </div>
 
           <div class="form-group">
-            <label for="contextWindowSize">Context Window Size (Tokens) *</label>
-            <input 
-              type="number" 
-              id="contextWindowSize" 
-              [(ngModel)]="currentConfig.contextWindowSize" 
-              placeholder="2048" />
+            <label for="contextWindow">Context window (tokens) *</label>
+            <input type="number" id="contextWindow" [(ngModel)]="cfg.contextWindowSize" placeholder="2048" />
           </div>
 
           <div class="form-group">
-            <label for="temperature">Temperature (Creativity/Precision) *</label>
-            <div class="range-control">
-              <input 
-                type="range" 
-                id="temperature" 
-                min="0.0" 
-                max="1.0" 
-                step="0.05" 
-                [(ngModel)]="currentConfig.temperature" />
-              <span class="range-val">{{ currentConfig.temperature | number:'1.2-2' }}</span>
+            <label for="temperature">Temperature</label>
+            <div class="range-row">
+              <input type="range" id="temperature" min="0" max="1" step="0.05" [(ngModel)]="cfg.temperature" />
+              <span class="range-val">{{ cfg.temperature | number:'1.2-2' }}</span>
             </div>
           </div>
 
           <div class="form-group">
-            <label for="keepAliveSetting">Keep Alive Setting (Timeout) *</label>
-            <input 
-              type="text" 
-              id="keepAliveSetting" 
-              [(ngModel)]="currentConfig.keepAliveSetting" 
-              placeholder="0s or 300s" />
+            <label for="keepAlive">Keep alive</label>
+            <input type="text" id="keepAlive" [(ngModel)]="cfg.keepAliveSetting" placeholder="0s or 300s" />
           </div>
 
-          <button 
-            (click)="saveConfig(currentConfig)" 
-            [disabled]="isLoading" 
-            class="btn-primary save-btn">
-            Save & Publish New Version
+          <button (click)="saveConfig(cfg)" [disabled]="isLoading" class="btn-save">
+            Save &amp; publish
           </button>
         </div>
       </div>
