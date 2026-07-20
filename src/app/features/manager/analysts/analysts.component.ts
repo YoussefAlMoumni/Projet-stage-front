@@ -9,7 +9,14 @@ interface Analyst {
   lastName: string;
   email: string;
   role: string;
-  dossierCount?: number;
+  fired: boolean;
+}
+
+interface AnalystPerformance {
+  analyst: Analyst;
+  totalDossiers: number;
+  completedDossiers: number;
+  performanceScore: number;
 }
 
 @Component({
@@ -22,7 +29,7 @@ interface Analyst {
 export class AnalystsComponent implements OnInit {
   private apiService = inject(ApiService);
 
-  analysts: Analyst[] = [];
+  performances: AnalystPerformance[] = [];
   isLoading = false;
   errorMessage = '';
 
@@ -32,29 +39,28 @@ export class AnalystsComponent implements OnInit {
 
   loadAnalysts(): void {
     this.isLoading = true;
-    this.apiService.get<Analyst[]>('/users').subscribe({
-      next: (users) => {
-        // Filter to analyst & manager roles; count assigned dossiers
-        const filteredUsers = users.filter(u => u.role === 'analyst' || u.role === 'manager');
-        // Also fetch dossiers to count assignments
-        this.apiService.get<any[]>('/dossiers').subscribe({
-          next: (dossiers) => {
-            this.analysts = filteredUsers.map(u => ({
-              ...u,
-              dossierCount: dossiers.filter(d => d.assignedAnalyst?.username === u.username).length
-            }));
-            this.isLoading = false;
-          },
-          error: () => {
-            this.analysts = filteredUsers;
-            this.isLoading = false;
-          }
-        });
+    this.apiService.get<AnalystPerformance[]>('/manager/analysts').subscribe({
+      next: (performances) => {
+        this.performances = performances;
+        this.isLoading = false;
       },
       error: () => {
         this.errorMessage = 'Failed to load analysts.';
         this.isLoading = false;
       }
     });
+  }
+
+  fireAnalyst(id: number): void {
+    if (confirm('Are you sure you want to mark this employee as fired?')) {
+      this.apiService.put(`/users/${id}/fire`, {}).subscribe({
+        next: () => {
+          this.loadAnalysts();
+        },
+        error: (err) => {
+          this.errorMessage = 'Failed to fire employee.';
+        }
+      });
+    }
   }
 }

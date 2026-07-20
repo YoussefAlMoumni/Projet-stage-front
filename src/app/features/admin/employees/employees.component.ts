@@ -16,6 +16,7 @@ interface User {
   role: string;
   salary: number;
   hireDate?: string;
+  fired: boolean;
 }
 
 @Component({
@@ -63,6 +64,7 @@ export class EmployeesComponent implements OnInit {
 
   getEmptyUser(): User {
     return {
+      fired: false,
       username: '',
       password: '',
       email: '',

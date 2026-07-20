@@ -1,7 +1,7 @@
 <div class="workspace">
   <div class="workspace-header">
     <h1>Analyst &amp; manager directory</h1>
-    <p>Operational staff overview with workload distribution and dossier assignment metrics.</p>
+    <p>Operational staff overview with workload distribution and performance metrics.</p>
   </div>
 
   <div *ngIf="errorMessage" class="feedback-toast error">{{ errorMessage }}</div>
@@ -13,28 +13,36 @@
           <th>Name</th>
           <th>Email</th>
           <th>Role</th>
-          <th>Assigned dossiers</th>
+          <th>Total Dossiers</th>
+          <th>Completed Dossiers</th>
+          <th>Performance Score</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let analyst of analysts">
+        <tr *ngFor="let perf of performances">
           <td>
             <div class="user-cell">
-              <div class="user-initial" [ngClass]="analyst.role">
-                {{ (analyst.firstName?.charAt(0) || analyst.username?.charAt(0) || '?').toUpperCase() }}
+              <div class="user-initial" [ngClass]="perf.analyst.role">
+                {{ (perf.analyst.firstName?.charAt(0) || perf.analyst.username?.charAt(0) || '?').toUpperCase() }}
               </div>
               <div>
-                <div class="user-cell-name">{{ analyst.firstName }} {{ analyst.lastName }}</div>
-                <div class="user-cell-handle">@{{ analyst.username }}</div>
+                <div class="user-cell-name">{{ perf.analyst.firstName }} {{ perf.analyst.lastName }}</div>
+                <div class="user-cell-handle">@{{ perf.analyst.username }}</div>
               </div>
             </div>
           </td>
-          <td class="email-cell">{{ analyst.email }}</td>
-          <td><span class="role-pill" [ngClass]="analyst.role">{{ analyst.role }}</span></td>
-          <td class="count-cell">{{ analyst.dossierCount ?? 0 }}</td>
+          <td class="email-cell">{{ perf.analyst.email }}</td>
+          <td><span class="role-pill" [ngClass]="perf.analyst.role">{{ perf.analyst.role }}</span></td>
+          <td class="count-cell">{{ perf.totalDossiers }}</td>
+          <td class="count-cell">{{ perf.completedDossiers }}</td>
+          <td class="count-cell">{{ perf.performanceScore.toFixed(1) }}%</td>
+          <td>
+            <button class="btn btn-danger" (click)="fireAnalyst(perf.analyst.id)">Fire</button>
+          </td>
         </tr>
-        <tr *ngIf="analysts.length === 0 && !isLoading">
-          <td colspan="4" class="empty-state">No analysts or managers found.</td>
+        <tr *ngIf="performances.length === 0 && !isLoading">
+          <td colspan="7" class="empty-state">No analysts or managers found.</td>
         </tr>
       </tbody>
     </table>
