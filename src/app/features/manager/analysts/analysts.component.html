@@ -6,11 +6,11 @@
     </div>
     <div class="header-actions">
       <!-- Live Sync Control -->
-      <div class="live-sync-control" (click)="toggleLiveSync()" [class.active]="isLiveSyncEnabled" title="Toggle Live Sync">
-        <span class="live-indicator" [class.syncing]="isBackgroundSyncing || isLiveSyncEnabled"></span>
+      <div class="live-sync-control" (click)="toggleLiveSync()" [class.active]="dataState.isLiveSyncEnabled" title="Toggle Live Sync">
+        <span class="live-indicator" [class.syncing]="(dataState.isAnalystsSyncing | async) || dataState.isLiveSyncEnabled"></span>
         <span class="sync-text">
-          {{ isLiveSyncEnabled ? 'Live Sync Active' : 'Live Sync Off' }}
-          <span class="last-sync" *ngIf="isLiveSyncEnabled">(Last: {{ lastSyncTime | date:'HH:mm:ss' }})</span>
+          {{ dataState.isLiveSyncEnabled ? 'Live Sync Active' : 'Live Sync Off' }}
+          <span class="last-sync" *ngIf="dataState.isLiveSyncEnabled">(Last: {{ dataState.lastAnalystSyncTime | date:'HH:mm:ss' }})</span>
         </span>
       </div>
     </div>
@@ -50,10 +50,12 @@
           <td class="count-cell">{{ perf.completedDossiers }}</td>
           <td class="count-cell">{{ perf.performanceScore.toFixed(1) }}%</td>
           <td>
-            <button class="btn btn-danger" (click)="fireAnalyst(perf.analyst.id)">Fire</button>
+            <button class="btn btn-danger" (click)="fireAnalyst(perf.analyst.id)" [disabled]="perf.analyst.fired">
+              {{ perf.analyst.fired ? 'Fired' : 'Fire' }}
+            </button>
           </td>
         </tr>
-        <tr *ngIf="performances.length === 0 && !isLoading">
+        <tr *ngIf="performances.length === 0 && !(dataState.isAnalystsSyncing | async)">
           <td colspan="7" class="empty-state">No analysts or managers found.</td>
         </tr>
       </tbody>

@@ -1,39 +1,10 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
-
-interface Collateral {
-  id?: number;
-  type: string;
-  description: string;
-  estimatedValue: number;
-  valuationDate: string;
-  status: string;
-}
-
-interface Loan {
-  id?: number;
-  amount: number;
-  interestRate: number;
-  termMonths: number;
-  paymentFrequency: string;
-  status: string;
-  collaterals: Collateral[];
-}
-
-interface Dossier {
-  id?: number;
-  siren: string;
-  clientType: string;
-  status: string;
-  creationDate?: string;
-  assignedAnalyst?: any;
-  loans: Loan[];
-  name?: string;
-  montantDemande?: string;
-}
-
+import { DataStateService } from '../../../core/services/data-state.service';
+import { Dossier, Loan, Collateral } from '../../../core/models/types';
 interface StageResult {
   stageName: string;
   output: string;
@@ -67,6 +38,7 @@ interface EvaluationResult {
   styleUrl: './dossiers.component.scss'
 })
 export class DossiersComponent implements OnInit, OnDestroy {
+  public dataState = inject(DataStateService);
   private apiService = inject(ApiService);
 
   dossiers: Dossier[] = [];
@@ -74,13 +46,10 @@ export class DossiersComponent implements OnInit, OnDestroy {
   
   viewMode: 'list' | 'create' | 'detail' = 'list';
   isLoading = false;
-  isBackgroundSyncing = false;
   errorMessage = '';
   successMessage = '';
 
-  isLiveSyncEnabled = true;
-  lastSyncTime: Date = new Date();
-  private refreshSub?: any;
+  private sub?: Subscription;
 
   // Form step
   formStep = 1;
@@ -97,60 +66,23 @@ export class DossiersComponent implements OnInit, OnDestroy {
   activeDetailTab: 'overview' | 'loans' | 'collaterals' | 'decision' = 'overview';
 
   ngOnInit(): void {
-    this.fetchDossiers(false);
-    this.startLiveSync();
+    this.sub = this.dataState.dossiers$.subscribe(data => {
+      this.dossiers = data;
+    });
+
+    if (this.dossiers.length === 0) {
+      this.dataState.fetchDossiers(true);
+    }
   }
 
   ngOnDestroy(): void {
-    this.stopLiveSync();
-  }
-
-  startLiveSync(): void {
-    this.stopLiveSync();
-    if (!this.isLiveSyncEnabled) return;
-    this.refreshSub = setInterval(() => {
-      if (this.viewMode === 'list') {
-        this.fetchDossiers(true);
-      }
-    }, 10000);
-  }
-
-  stopLiveSync(): void {
-    if (this.refreshSub) {
-      clearInterval(this.refreshSub);
-      this.refreshSub = undefined;
+    if (this.sub) {
+      this.sub.unsubscribe();
     }
   }
 
   toggleLiveSync(): void {
-    this.isLiveSyncEnabled = !this.isLiveSyncEnabled;
-    if (this.isLiveSyncEnabled) {
-      this.startLiveSync();
-      this.fetchDossiers(true);
-    } else {
-      this.stopLiveSync();
-    }
-  }
-
-  fetchDossiers(isBackground = false): void {
-    if (!isBackground) {
-      this.isLoading = true;
-    } else {
-      this.isBackgroundSyncing = true;
-    }
-    this.apiService.get<Dossier[]>('/dossiers').subscribe({
-      next: (data) => {
-        this.dossiers = data;
-        this.lastSyncTime = new Date();
-        this.isLoading = false;
-        this.isBackgroundSyncing = false;
-      },
-      error: () => {
-        this.errorMessage = 'Failed to load dossiers.';
-        this.isLoading = false;
-        this.isBackgroundSyncing = false;
-      }
-    });
+    this.dataState.toggleLiveSync();
   }
 
   getEmptyDossier(): Dossier {
@@ -217,14 +149,20 @@ export class DossiersComponent implements OnInit, OnDestroy {
 
   saveDossier(): void {
     this.isLoading = true;
+    // Optimistic UI update
+    const tempDossier = { ...this.newDossier, id: Date.now() }; // Fake ID for immediate rendering
+    this.dataState.addDossierOptimistically(tempDossier);
+    this.viewMode = 'list';
+    
     this.apiService.post<Dossier>('/dossiers', this.newDossier).subscribe({
       next: () => {
         this.successMessage = 'Dossier created successfully.';
-        this.fetchDossiers();
-        this.viewMode = 'list';
+        this.dataState.fetchDossiers(true); // Sync real data with DB
+        this.isLoading = false;
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Failed to create dossier.';
+        this.dataState.fetchDossiers(true); // Revert on failure
         this.isLoading = false;
       }
     });
@@ -234,18 +172,21 @@ export class DossiersComponent implements OnInit, OnDestroy {
     if (!confirm('Are you sure you want to delete this dossier? All related loans and collaterals will be deleted.')) {
       return;
     }
-    this.isLoading = true;
+    
+    // Optimistic Update
+    this.dataState.removeDossierOptimistically(id);
+    if (this.selectedDossier?.id === id) {
+      this.viewMode = 'list';
+    }
+
     this.apiService.delete<any>(`/dossiers/${id}`).subscribe({
       next: () => {
         this.successMessage = 'Dossier deleted successfully.';
-        this.fetchDossiers();
-        if (this.selectedDossier?.id === id) {
-          this.viewMode = 'list';
-        }
+        this.dataState.fetchDossiers(true); // Sync
       },
       error: () => {
         this.errorMessage = 'Failed to delete dossier.';
-        this.isLoading = false;
+        this.dataState.fetchDossiers(true); // Revert on failure
       }
     });
   }

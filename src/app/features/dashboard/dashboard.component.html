@@ -8,11 +8,11 @@
     </div>
     <div class="dash-header-right">
       <!-- Live Sync Control -->
-      <div class="live-sync-control" (click)="toggleLiveSync()" [class.active]="isLiveSyncEnabled" title="Toggle Live Sync">
-        <span class="live-indicator" [class.syncing]="isBackgroundSyncing || isLiveSyncEnabled"></span>
+      <div class="live-sync-control" (click)="toggleLiveSync()" [class.active]="dataState.isLiveSyncEnabled" title="Toggle Live Sync">
+        <span class="live-indicator" [class.syncing]="(dataState.isDossiersSyncing | async) || dataState.isLiveSyncEnabled"></span>
         <span class="sync-text">
-          {{ isLiveSyncEnabled ? 'Live Sync Active' : 'Live Sync Off' }}
-          <span class="last-sync" *ngIf="isLiveSyncEnabled">(Last: {{ lastSyncTime | date:'HH:mm:ss' }})</span>
+          {{ dataState.isLiveSyncEnabled ? 'Live Sync Active' : 'Live Sync Off' }}
+          <span class="last-sync" *ngIf="dataState.isLiveSyncEnabled">(Last: {{ dataState.lastDossierSyncTime | date:'HH:mm:ss' }})</span>
         </span>
       </div>
       <span class="role-tag">{{ role | titlecase }}</span>
@@ -76,7 +76,7 @@
             <td><span class="status-pill" [ngClass]="d.status">{{ d.status }}</span></td>
             <td class="muted-cell">{{ d.assignedAnalyst?.username || 'Unassigned' }}</td>
           </tr>
-          <tr *ngIf="recentDossiers.length === 0 && !isLoading">
+          <tr *ngIf="recentDossiers.length === 0 && !(dataState.isDossiersSyncing | async)">
             <td colspan="5" class="empty-state">
               No dossiers yet.
               <button (click)="navigateTo('/dossiers')" class="inline-link">Create the first one</button>
