@@ -8,11 +8,11 @@
     </div>
     <div class="dash-header-right">
       <!-- Live Sync Control -->
-      <div class="live-sync-control" (click)="toggleLiveSync()" [class.active]="dataState.isLiveSyncEnabled" title="Toggle Live Sync">
-        <span class="live-indicator" [class.syncing]="(dataState.isDossiersSyncing | async) || dataState.isLiveSyncEnabled"></span>
+      <div class="live-sync-control active" title="Live Sync Active">
+        <span class="live-indicator" [class.syncing]="dataState.isDossiersSyncing | async"></span>
         <span class="sync-text">
-          {{ dataState.isLiveSyncEnabled ? 'Live Sync Active' : 'Live Sync Off' }}
-          <span class="last-sync" *ngIf="dataState.isLiveSyncEnabled">(Last: {{ dataState.lastDossierSyncTime | date:'HH:mm:ss' }})</span>
+          Live Sync Active
+          <span class="last-sync">(Last: {{ dataState.lastDossierSyncTime | date:'HH:mm:ss' }})</span>
         </span>
       </div>
       <span class="role-tag">{{ role | titlecase }}</span>

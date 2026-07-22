@@ -61,10 +61,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleLiveSync(): void {
-    this.dataState.toggleLiveSync();
-  }
-
   private calculateStats(dossiers: Dossier[]): void {
     this.stats.totalDossiers = dossiers.length;
     this.stats.pendingDossiers = dossiers.filter(d => d.status === 'in_progress').length;

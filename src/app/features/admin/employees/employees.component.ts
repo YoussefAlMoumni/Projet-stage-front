@@ -1,23 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
-
-interface User {
-  id?: number;
-  username: string;
-  password?: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  nationalId: string;
-  phoneNumber: string;
-  gender: string;
-  role: string;
-  salary: number;
-  hireDate?: string;
-  fired: boolean;
-}
+import { DataStateService } from '../../../core/services/data-state.service';
+import { User } from '../../../core/models/types';
 
 @Component({
   selector: 'app-employees',
@@ -26,13 +13,15 @@ interface User {
   templateUrl: './employees.component.html',
   styleUrl: './employees.component.scss'
 })
-export class EmployeesComponent implements OnInit {
+export class EmployeesComponent implements OnInit, OnDestroy {
+  public dataState = inject(DataStateService);
   private apiService = inject(ApiService);
 
   users: User[] = [];
   isLoading = false;
   errorMessage = '';
   successMessage = '';
+  private sub?: Subscription;
 
   // Modal Control
   showModal = false;
@@ -45,21 +34,19 @@ export class EmployeesComponent implements OnInit {
   errors: any = {};
 
   ngOnInit(): void {
-    this.fetchUsers();
+    this.sub = this.dataState.users$.subscribe(data => {
+      this.users = data;
+    });
+
+    if (this.users.length === 0) {
+      this.dataState.fetchUsers(true);
+    }
   }
 
-  fetchUsers(): void {
-    this.isLoading = true;
-    this.apiService.get<User[]>('/users').subscribe({
-      next: (data) => {
-        this.users = data;
-        this.isLoading = false;
-      },
-      error: () => {
-        this.errorMessage = 'Failed to load employees.';
-        this.isLoading = false;
-      }
-    });
+  ngOnDestroy(): void {
+    if (this.sub) {
+      this.sub.unsubscribe();
+    }
   }
 
   getEmptyUser(): User {
@@ -168,26 +155,37 @@ export class EmployeesComponent implements OnInit {
     }
 
     if (this.isEditMode) {
+      // Optimistic update
+      this.dataState.updateUserOptimistically(payload);
+      this.showModal = false;
+      
       this.apiService.put<User>(`/users/${payload.id}`, payload).subscribe({
         next: () => {
           this.successMessage = 'User updated successfully.';
-          this.fetchUsers();
-          this.showModal = false;
+          this.dataState.fetchUsers(true); // Sync real state
+          this.isLoading = false;
         },
         error: (err) => {
           this.errorMessage = err.error?.message || 'Failed to update user.';
+          this.dataState.fetchUsers(true); // Revert on failure
           this.isLoading = false;
         }
       });
     } else {
+      // Optimistic update with fake ID
+      const tempUser = { ...payload, id: Date.now() };
+      this.dataState.addUserOptimistically(tempUser);
+      this.showModal = false;
+
       this.apiService.post<User>('/users', payload).subscribe({
         next: () => {
           this.successMessage = 'User created successfully.';
-          this.fetchUsers();
-          this.showModal = false;
+          this.dataState.fetchUsers(true);
+          this.isLoading = false;
         },
         error: (err) => {
           this.errorMessage = err.error?.message || 'Failed to create user.';
+          this.dataState.fetchUsers(true);
           this.isLoading = false;
         }
       });
@@ -203,13 +201,18 @@ export class EmployeesComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
+    // Optimistic delete
+    this.dataState.removeUserOptimistically(id);
+
     this.apiService.delete<any>(`/users/${id}`).subscribe({
       next: (res) => {
         this.successMessage = res.message || 'User deleted.';
-        this.fetchUsers();
+        this.dataState.fetchUsers(true);
+        this.isLoading = false;
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Failed to delete user.';
+        this.dataState.fetchUsers(true); // Revert
         this.isLoading = false;
       }
     });

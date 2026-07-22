@@ -51,7 +51,7 @@
             </button>
           </td>
         </tr>
-        <tr *ngIf="users.length === 0 && !isLoading">
+        <tr *ngIf="users.length === 0 && !(dataState.isUsersSyncing | async)">
           <td colspan="7" class="empty-state">No employees found.</td>
         </tr>
       </tbody>

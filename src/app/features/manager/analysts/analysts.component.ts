@@ -38,10 +38,6 @@ export class AnalystsComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleLiveSync(): void {
-    this.dataState.toggleLiveSync();
-  }
-
   fireAnalyst(id: number): void {
     if (confirm('Are you sure you want to mark this employee as fired?')) {
       // Optimistic update

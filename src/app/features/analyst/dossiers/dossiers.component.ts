@@ -81,10 +81,6 @@ export class DossiersComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleLiveSync(): void {
-    this.dataState.toggleLiveSync();
-  }
-
   getEmptyDossier(): Dossier {
     return {
       siren: '',

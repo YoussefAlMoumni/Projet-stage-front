@@ -45,3 +45,33 @@ export interface AnalystPerformance {
   completedDossiers: number;
   performanceScore: number;
 }
+
+export interface User {
+  id?: number;
+  username: string;
+  password?: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  nationalId: string;
+  phoneNumber: string;
+  gender: string;
+  role: string;
+  salary: number;
+  hireDate?: string;
+  fired: boolean;
+}
+
+export interface PromptConfig {
+  modelId: number;
+  stageName: string;
+  modelName: string;
+  contextWindowSize: number;
+  temperature: number;
+  keepAliveSetting: string;
+  active: boolean;
+  promptId: number | null;
+  promptText: string;
+  versionTag: string;
+  updatedAt: string | null;
+}

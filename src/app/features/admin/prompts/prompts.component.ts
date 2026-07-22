@@ -1,21 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
-
-interface PromptConfig {
-  modelId: number;
-  stageName: string;
-  modelName: string;
-  contextWindowSize: number;
-  temperature: number;
-  keepAliveSetting: string;
-  active: boolean;
-  promptId: number | null;
-  promptText: string;
-  versionTag: string;
-  updatedAt: string | null;
-}
+import { DataStateService } from '../../../core/services/data-state.service';
+import { PromptConfig } from '../../../core/models/types';
 
 @Component({
   selector: 'app-prompts',
@@ -24,33 +13,33 @@ interface PromptConfig {
   templateUrl: './prompts.component.html',
   styleUrl: './prompts.component.scss'
 })
-export class PromptsComponent implements OnInit {
+export class PromptsComponent implements OnInit, OnDestroy {
+  public dataState = inject(DataStateService);
   private apiService = inject(ApiService);
 
   configs: PromptConfig[] = [];
   isLoading = false;
   successMessage = '';
   errorMessage = '';
+  private sub?: Subscription;
 
   activeStage: string = 'solvency';
   stages: string[] = ['solvency', 'history', 'guarantees', 'compliance', 'supervisor'];
 
   ngOnInit(): void {
-    this.fetchConfigs();
+    this.sub = this.dataState.prompts$.subscribe(data => {
+      this.configs = data;
+    });
+
+    if (this.configs.length === 0) {
+      this.dataState.fetchPrompts(true);
+    }
   }
 
-  fetchConfigs(): void {
-    this.isLoading = true;
-    this.apiService.get<PromptConfig[]>('/prompts').subscribe({
-      next: (data) => {
-        this.configs = data;
-        this.isLoading = false;
-      },
-      error: () => {
-        this.errorMessage = 'Failed to load prompt configurations.';
-        this.isLoading = false;
-      }
-    });
+  ngOnDestroy(): void {
+    if (this.sub) {
+      this.sub.unsubscribe();
+    }
   }
 
   getConfigForStage(stage: string): PromptConfig | undefined {
@@ -70,13 +59,19 @@ export class PromptsComponent implements OnInit {
       promptText: config.promptText
     };
 
+    // Optimistic UI update
+    this.dataState.updatePromptOptimistically(config);
+    this.successMessage = `Saving ${config.stageName.toUpperCase()} configurations...`;
+
     this.apiService.put<any>(`/prompts/${config.modelId}`, payload).subscribe({
       next: (res) => {
         this.successMessage = `Successfully updated ${config.stageName.toUpperCase()} configurations.`;
-        this.fetchConfigs();
+        this.dataState.fetchPrompts(true); // Sync real state
+        this.isLoading = false;
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Failed to save prompt configuration.';
+        this.dataState.fetchPrompts(true); // Revert
         this.isLoading = false;
       }
     });

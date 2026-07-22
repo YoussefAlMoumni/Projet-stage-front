@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { ApiService } from './api.service';
-import { Dossier, AnalystPerformance } from '../models/types';
+import { Dossier, AnalystPerformance, User, PromptConfig } from '../models/types';
 
 @Injectable({
   providedIn: 'root'
@@ -14,16 +14,25 @@ export class DataStateService implements OnDestroy {
   private analystsSubject = new BehaviorSubject<AnalystPerformance[]>([]);
   public analysts$ = this.analystsSubject.asObservable();
 
+  private usersSubject = new BehaviorSubject<User[]>([]);
+  public users$ = this.usersSubject.asObservable();
+
+  private promptsSubject = new BehaviorSubject<PromptConfig[]>([]);
+  public prompts$ = this.promptsSubject.asObservable();
+
   // Polling State
   private refreshSub?: any;
-  public isLiveSyncEnabled = true;
   
   public lastDossierSyncTime: Date = new Date();
   public lastAnalystSyncTime: Date = new Date();
+  public lastUserSyncTime: Date = new Date();
+  public lastPromptSyncTime: Date = new Date();
   
   // Expose syncing indicators to components
   public isDossiersSyncing = new BehaviorSubject<boolean>(false);
   public isAnalystsSyncing = new BehaviorSubject<boolean>(false);
+  public isUsersSyncing = new BehaviorSubject<boolean>(false);
+  public isPromptsSyncing = new BehaviorSubject<boolean>(false);
 
   constructor(private apiService: ApiService) {}
 
@@ -62,14 +71,45 @@ export class DataStateService implements OnDestroy {
     });
   }
 
+  public fetchUsers(isBackground = false): void {
+    if (isBackground) this.isUsersSyncing.next(true);
+
+    this.apiService.get<User[]>('/users').subscribe({
+      next: (data) => {
+        this.usersSubject.next(data);
+        this.lastUserSyncTime = new Date();
+        this.isUsersSyncing.next(false);
+      },
+      error: () => {
+        this.isUsersSyncing.next(false);
+      }
+    });
+  }
+
+  public fetchPrompts(isBackground = false): void {
+    if (isBackground) this.isPromptsSyncing.next(true);
+
+    this.apiService.get<PromptConfig[]>('/prompts').subscribe({
+      next: (data) => {
+        this.promptsSubject.next(data);
+        this.lastPromptSyncTime = new Date();
+        this.isPromptsSyncing.next(false);
+      },
+      error: () => {
+        this.isPromptsSyncing.next(false);
+      }
+    });
+  }
+
   // Polling Management
   public startLiveSync(): void {
     this.stopLiveSync();
-    if (!this.isLiveSyncEnabled) return;
 
     this.refreshSub = setInterval(() => {
       this.fetchDossiers(true);
       this.fetchAnalysts(true);
+      this.fetchUsers(true);
+      this.fetchPrompts(true);
     }, 10000);
   }
 
@@ -77,17 +117,6 @@ export class DataStateService implements OnDestroy {
     if (this.refreshSub) {
       clearInterval(this.refreshSub);
       this.refreshSub = undefined;
-    }
-  }
-
-  public toggleLiveSync(): void {
-    this.isLiveSyncEnabled = !this.isLiveSyncEnabled;
-    if (this.isLiveSyncEnabled) {
-      this.startLiveSync();
-      this.fetchDossiers(true);
-      this.fetchAnalysts(true);
-    } else {
-      this.stopLiveSync();
     }
   }
 
@@ -111,5 +140,25 @@ export class DataStateService implements OnDestroy {
       return perf;
     });
     this.analystsSubject.next(updated);
+  }
+
+  public addUserOptimistically(user: User): void {
+    const current = this.usersSubject.value;
+    this.usersSubject.next([...current, user]);
+  }
+
+  public updateUserOptimistically(user: User): void {
+    const current = this.usersSubject.value;
+    this.usersSubject.next(current.map(u => u.id === user.id ? user : u));
+  }
+
+  public removeUserOptimistically(userId: number): void {
+    const current = this.usersSubject.value;
+    this.usersSubject.next(current.filter(u => u.id !== userId));
+  }
+
+  public updatePromptOptimistically(config: PromptConfig): void {
+    const current = this.promptsSubject.value;
+    this.promptsSubject.next(current.map(c => c.modelId === config.modelId ? config : c));
   }
 }
