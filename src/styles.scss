@@ -406,3 +406,48 @@ input, textarea, select { font-family: var(--font-sans); }
   vertical-align: middle;
   flex-shrink: 0;
 }
+
+/* Live Sync Indicator */
+.live-sync-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 99px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-xs);
+
+  .live-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-tertiary);
+    transition: background var(--ease);
+
+    &.syncing {
+      background: var(--green-700);
+      box-shadow: 0 0 0 3px var(--green-100);
+      animation: pulse-sync 1.5s infinite;
+    }
+  }
+
+  &.active .live-indicator {
+    background: var(--green-700);
+  }
+
+  .last-sync {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    margin-left: 2px;
+  }
+}
+
+@keyframes pulse-sync {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.4); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(21, 128, 61, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(21, 128, 61, 0); }
+}

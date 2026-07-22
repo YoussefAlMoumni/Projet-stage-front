@@ -1,6 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../../core/services/api.service';
+import { Subscription } from 'rxjs';
+import { DataStateService } from '../../../core/services/data-state.service';
+import { Dossier } from '../../../core/models/types';
 
 interface Loan {
   id: number;
@@ -19,32 +21,29 @@ interface Loan {
   templateUrl: './loans.component.html',
   styleUrl: './loans.component.scss'
 })
-export class LoansComponent implements OnInit {
-  private apiService = inject(ApiService);
+export class LoansComponent implements OnInit, OnDestroy {
+  public dataState = inject(DataStateService);
 
   loans: Loan[] = [];
-  isLoading = false;
   errorMessage = '';
+  private sub?: Subscription;
 
   ngOnInit(): void {
-    this.fetchLoans();
+    this.sub = this.dataState.dossiers$.subscribe((dossiers: Dossier[]) => {
+      this.loans = dossiers.flatMap(d =>
+        (d.loans || []).map((l: any) => ({ ...l, dossier: { id: d.id, siren: d.siren } }))
+      );
+    });
+
+    if (this.loans.length === 0) {
+      this.dataState.fetchDossiers(true);
+    }
   }
 
-  fetchLoans(): void {
-    this.isLoading = true;
-    this.apiService.get<any[]>('/dossiers').subscribe({
-      next: (dossiers) => {
-        // Flatten all loans from all dossiers
-        this.loans = dossiers.flatMap(d =>
-          (d.loans || []).map((l: Loan) => ({ ...l, dossier: { id: d.id, siren: d.siren } }))
-        );
-        this.isLoading = false;
-      },
-      error: () => {
-        this.errorMessage = 'Failed to load loans.';
-        this.isLoading = false;
-      }
-    });
+  ngOnDestroy(): void {
+    if (this.sub) {
+      this.sub.unsubscribe();
+    }
   }
 
   monthlyPayment(loan: Loan): number {

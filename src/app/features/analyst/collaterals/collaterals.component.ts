@@ -1,6 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../../core/services/api.service';
+import { Subscription } from 'rxjs';
+import { DataStateService } from '../../../core/services/data-state.service';
+import { Dossier } from '../../../core/models/types';
 
 interface Collateral {
   id: number;
@@ -19,37 +21,34 @@ interface Collateral {
   templateUrl: './collaterals.component.html',
   styleUrl: './collaterals.component.scss'
 })
-export class CollateralsComponent implements OnInit {
-  private apiService = inject(ApiService);
+export class CollateralsComponent implements OnInit, OnDestroy {
+  public dataState = inject(DataStateService);
 
   collaterals: Collateral[] = [];
-  isLoading = false;
   errorMessage = '';
+  private sub?: Subscription;
 
   ngOnInit(): void {
-    this.fetchCollaterals();
+    this.sub = this.dataState.dossiers$.subscribe((dossiers: Dossier[]) => {
+      this.collaterals = dossiers.flatMap(d =>
+        (d.loans || []).flatMap((l: any) =>
+          (l.collaterals || []).map((c: any) => ({
+            ...c,
+            loan: { id: l.id, amount: l.amount, dossierSiren: d.siren }
+          }))
+        )
+      );
+    });
+
+    if (this.collaterals.length === 0) {
+      this.dataState.fetchDossiers(true);
+    }
   }
 
-  fetchCollaterals(): void {
-    this.isLoading = true;
-    this.apiService.get<any[]>('/dossiers').subscribe({
-      next: (dossiers) => {
-        // Flatten all collaterals from all loans from all dossiers
-        this.collaterals = dossiers.flatMap(d =>
-          (d.loans || []).flatMap((l: any) =>
-            (l.collaterals || []).map((c: Collateral) => ({
-              ...c,
-              loan: { id: l.id, amount: l.amount, dossierSiren: d.siren }
-            }))
-          )
-        );
-        this.isLoading = false;
-      },
-      error: () => {
-        this.errorMessage = 'Failed to load collaterals.';
-        this.isLoading = false;
-      }
-    });
+  ngOnDestroy(): void {
+    if (this.sub) {
+      this.sub.unsubscribe();
+    }
   }
 
   coverageRatio(collateral: Collateral): number {

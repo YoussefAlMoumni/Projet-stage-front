@@ -1,7 +1,19 @@
 <div class="workspace">
   <div class="workspace-header">
-    <h1>AI agent prompt tuning</h1>
-    <p>Customize prompt templates, model parameters, context windows, and temperature settings per sub-agent stage.</p>
+    <div class="header-titles">
+      <h1>AI agent prompt tuning</h1>
+      <p>Customize prompt templates, model parameters, context windows, and temperature settings per sub-agent stage.</p>
+    </div>
+    <div class="header-actions">
+      <!-- Live Sync Control -->
+      <div class="live-sync-control active" title="Live Sync Active">
+        <span class="live-indicator" [class.syncing]="dataState.isPromptsSyncing | async"></span>
+        <span class="sync-text">
+          Live Sync Active
+          <span class="last-sync">(Last: {{ dataState.lastPromptSyncTime | date:'HH:mm:ss' }})</span>
+        </span>
+      </div>
+    </div>
   </div>
 
   <div *ngIf="successMessage" class="feedback-toast success">{{ successMessage }}</div>
