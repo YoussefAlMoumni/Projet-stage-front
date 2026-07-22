@@ -32,12 +32,17 @@
 .panel-brand-icon {
   width: 36px;
   height: 36px;
-  background: rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  overflow: hidden;
+
+  .brand-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 }
 
 .panel-headline {

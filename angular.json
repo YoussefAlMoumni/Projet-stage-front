@@ -27,7 +27,8 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/logo.png"
             ],
             "styles": [
               "src/styles.scss"
