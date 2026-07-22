@@ -27,7 +27,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of users">
+        <tr *ngFor="let user of users" [class.is-fired]="user.fired">
           <td>
             <div class="username-cell">
               <div class="user-badge" [ngClass]="user.role">{{ user.role.substring(0, 2).toUpperCase() }}</div>
