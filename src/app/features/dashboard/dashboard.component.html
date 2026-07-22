@@ -6,7 +6,17 @@
       <p class="dash-greeting">Good morning,</p>
       <h1>{{ username }}</h1>
     </div>
-    <span class="role-tag">{{ role | titlecase }}</span>
+    <div class="dash-header-right">
+      <!-- Live Sync Control -->
+      <div class="live-sync-control" (click)="toggleLiveSync()" [class.active]="isLiveSyncEnabled" title="Toggle Live Sync">
+        <span class="live-indicator" [class.syncing]="isBackgroundSyncing || isLiveSyncEnabled"></span>
+        <span class="sync-text">
+          {{ isLiveSyncEnabled ? 'Live Sync Active' : 'Live Sync Off' }}
+          <span class="last-sync" *ngIf="isLiveSyncEnabled">(Last: {{ lastSyncTime | date:'HH:mm:ss' }})</span>
+        </span>
+      </div>
+      <span class="role-tag">{{ role | titlecase }}</span>
+    </div>
   </div>
 
   <!-- KPI row -->

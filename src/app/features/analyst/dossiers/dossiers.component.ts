@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
@@ -66,7 +66,7 @@ interface EvaluationResult {
   templateUrl: './dossiers.component.html',
   styleUrl: './dossiers.component.scss'
 })
-export class DossiersComponent implements OnInit {
+export class DossiersComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
 
   dossiers: Dossier[] = [];
@@ -74,8 +74,13 @@ export class DossiersComponent implements OnInit {
   
   viewMode: 'list' | 'create' | 'detail' = 'list';
   isLoading = false;
+  isBackgroundSyncing = false;
   errorMessage = '';
   successMessage = '';
+
+  isLiveSyncEnabled = true;
+  lastSyncTime: Date = new Date();
+  private refreshSub?: any;
 
   // Form step
   formStep = 1;
@@ -92,19 +97,58 @@ export class DossiersComponent implements OnInit {
   activeDetailTab: 'overview' | 'loans' | 'collaterals' | 'decision' = 'overview';
 
   ngOnInit(): void {
-    this.fetchDossiers();
+    this.fetchDossiers(false);
+    this.startLiveSync();
   }
 
-  fetchDossiers(): void {
-    this.isLoading = true;
+  ngOnDestroy(): void {
+    this.stopLiveSync();
+  }
+
+  startLiveSync(): void {
+    this.stopLiveSync();
+    if (!this.isLiveSyncEnabled) return;
+    this.refreshSub = setInterval(() => {
+      if (this.viewMode === 'list') {
+        this.fetchDossiers(true);
+      }
+    }, 10000);
+  }
+
+  stopLiveSync(): void {
+    if (this.refreshSub) {
+      clearInterval(this.refreshSub);
+      this.refreshSub = undefined;
+    }
+  }
+
+  toggleLiveSync(): void {
+    this.isLiveSyncEnabled = !this.isLiveSyncEnabled;
+    if (this.isLiveSyncEnabled) {
+      this.startLiveSync();
+      this.fetchDossiers(true);
+    } else {
+      this.stopLiveSync();
+    }
+  }
+
+  fetchDossiers(isBackground = false): void {
+    if (!isBackground) {
+      this.isLoading = true;
+    } else {
+      this.isBackgroundSyncing = true;
+    }
     this.apiService.get<Dossier[]>('/dossiers').subscribe({
       next: (data) => {
         this.dossiers = data;
+        this.lastSyncTime = new Date();
         this.isLoading = false;
+        this.isBackgroundSyncing = false;
       },
       error: () => {
         this.errorMessage = 'Failed to load dossiers.';
         this.isLoading = false;
+        this.isBackgroundSyncing = false;
       }
     });
   }

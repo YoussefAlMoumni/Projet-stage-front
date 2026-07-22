@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -19,7 +19,7 @@ interface DashboardStats {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -33,18 +33,58 @@ export class DashboardComponent implements OnInit {
   };
   recentDossiers: any[] = [];
   isLoading = false;
+  isBackgroundSyncing = false;
   username = '';
   role = '';
+
+  isLiveSyncEnabled = true;
+  lastSyncTime: Date = new Date();
+  private refreshSub?: any;
 
   ngOnInit(): void {
     const user = this.authService.getUser();
     this.username = user?.username || 'User';
     this.role = user?.role || '';
-    this.loadStats();
+    this.loadStats(false);
+    this.startLiveSync();
   }
 
-  loadStats(): void {
-    this.isLoading = true;
+  ngOnDestroy(): void {
+    this.stopLiveSync();
+  }
+
+  startLiveSync(): void {
+    this.stopLiveSync();
+    if (!this.isLiveSyncEnabled) return;
+    this.refreshSub = setInterval(() => {
+      this.loadStats(true);
+    }, 10000);
+  }
+
+  stopLiveSync(): void {
+    if (this.refreshSub) {
+      clearInterval(this.refreshSub);
+      this.refreshSub = undefined;
+    }
+  }
+
+  toggleLiveSync(): void {
+    this.isLiveSyncEnabled = !this.isLiveSyncEnabled;
+    if (this.isLiveSyncEnabled) {
+      this.startLiveSync();
+      this.loadStats(true);
+    } else {
+      this.stopLiveSync();
+    }
+  }
+
+  loadStats(isBackground = false): void {
+    if (!isBackground) {
+      this.isLoading = true;
+    } else {
+      this.isBackgroundSyncing = true;
+    }
+    
     this.apiService.get<any[]>('/dossiers').subscribe({
       next: (dossiers) => {
         this.stats.totalDossiers = dossiers.length;
@@ -56,9 +96,14 @@ export class DashboardComponent implements OnInit {
           sum + (d.loans || []).reduce((ls: number, l: any) =>
             ls + (l.collaterals || []).reduce((cs: number, c: any) => cs + (c.estimatedValue || 0), 0), 0), 0);
         this.recentDossiers = dossiers.slice(0, 5);
+        this.lastSyncTime = new Date();
         this.isLoading = false;
+        this.isBackgroundSyncing = false;
       },
-      error: () => { this.isLoading = false; }
+      error: () => { 
+        this.isLoading = false; 
+        this.isBackgroundSyncing = false;
+      }
     });
   }
 

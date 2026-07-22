@@ -1,7 +1,19 @@
 <div class="workspace">
   <div class="workspace-header">
-    <h1>Analyst &amp; manager directory</h1>
-    <p>Operational staff overview with workload distribution and performance metrics.</p>
+    <div class="header-titles">
+      <h1>Analyst &amp; manager directory</h1>
+      <p>Operational staff overview with workload distribution and performance metrics.</p>
+    </div>
+    <div class="header-actions">
+      <!-- Live Sync Control -->
+      <div class="live-sync-control" (click)="toggleLiveSync()" [class.active]="isLiveSyncEnabled" title="Toggle Live Sync">
+        <span class="live-indicator" [class.syncing]="isBackgroundSyncing || isLiveSyncEnabled"></span>
+        <span class="sync-text">
+          {{ isLiveSyncEnabled ? 'Live Sync Active' : 'Live Sync Off' }}
+          <span class="last-sync" *ngIf="isLiveSyncEnabled">(Last: {{ lastSyncTime | date:'HH:mm:ss' }})</span>
+        </span>
+      </div>
+    </div>
   </div>
 
   <div *ngIf="errorMessage" class="feedback-toast error">{{ errorMessage }}</div>

@@ -10,10 +10,20 @@
         <h1>Credit dossiers</h1>
         <p>Search, evaluate, and browse active credit dossiers, loans, and collaterals.</p>
       </div>
-      <button (click)="openCreateForm()" class="btn-primary">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        New request
-      </button>
+      <div class="header-actions">
+        <!-- Live Sync Control -->
+        <div class="live-sync-control" (click)="toggleLiveSync()" [class.active]="isLiveSyncEnabled" title="Toggle Live Sync">
+          <span class="live-indicator" [class.syncing]="isBackgroundSyncing || isLiveSyncEnabled"></span>
+          <span class="sync-text">
+            {{ isLiveSyncEnabled ? 'Live Sync Active' : 'Live Sync Off' }}
+            <span class="last-sync" *ngIf="isLiveSyncEnabled">(Last: {{ lastSyncTime | date:'HH:mm:ss' }})</span>
+          </span>
+        </div>
+        <button (click)="openCreateForm()" class="btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New request
+        </button>
+      </div>
     </div>
 
     <div class="card table-container">
