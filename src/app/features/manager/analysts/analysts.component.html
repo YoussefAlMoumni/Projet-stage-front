@@ -4,16 +4,6 @@
       <h1>Analyst &amp; manager directory</h1>
       <p>Operational staff overview with workload distribution and performance metrics.</p>
     </div>
-    <div class="header-actions">
-      <!-- Live Sync Control -->
-      <div class="live-sync-control active" title="Live Sync Active">
-        <span class="live-indicator" [class.syncing]="dataState.isAnalystsSyncing | async"></span>
-        <span class="sync-text">
-          Live Sync Active
-          <span class="last-sync">(Last: {{ dataState.lastAnalystSyncTime | date:'HH:mm:ss' }})</span>
-        </span>
-      </div>
-    </div>
   </div>
 
   <div *ngIf="errorMessage" class="feedback-toast error">{{ errorMessage }}</div>

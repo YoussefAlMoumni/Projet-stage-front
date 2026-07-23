@@ -187,49 +187,91 @@ export class DossiersComponent implements OnInit, OnDestroy {
     });
   }
 
-  triggerSmartDecision(): void {
+  async triggerSmartDecision(): Promise<void> {
     if (!this.selectedDossier) return;
     this.isEvaluating = true;
     this.evaluationProgress = 10;
     this.evaluationLog = ['Initializing pipeline orchestrator...', `Execution mode: ${this.evalMode}`];
     this.activeDetailTab = 'decision';
     
-    // Simulate pipeline workflow visualizer updates step by step
-    setTimeout(() => {
-      this.evaluationProgress = 25;
-      this.evaluationLog.push('Running Solvency Agent Stage: calculating debt ratios...');
-    }, 1500);
-
-    setTimeout(() => {
-      this.evaluationProgress = 45;
-      this.evaluationLog.push('Running History Agent Stage: searching historical database & payment incidents...');
-    }, 3000);
-
-    setTimeout(() => {
-      this.evaluationProgress = 65;
-      this.evaluationLog.push('Running Guarantees Agent Stage: valuing collateral assets...');
-    }, 4500);
-
-    setTimeout(() => {
-      this.evaluationProgress = 85;
-      this.evaluationLog.push('Running Compliance Agent Stage: performing KYC/AML regulations audit...');
-    }, 6000);
-
-    // Call real backend API decision logic
-    this.apiService.post<EvaluationResult>(`/dossiers/${this.selectedDossier.id}/ai-decision?mode=${this.evalMode}`, {}).subscribe({
-      next: (res) => {
-        this.evaluationProgress = 100;
-        this.evaluationLog.push('Running Supervisor Agent Stage: consolidating report...');
-        this.evaluationLog.push('Pipeline evaluation completed successfully!');
-        this.latestEvaluation = res;
-        this.isEvaluating = false;
+    // Initialize empty evaluation object to store live dynamic results
+    this.latestEvaluation = {
+      evaluation: {
+        id: 0, executionMode: this.evalMode, createdAt: new Date().toISOString(),
+        solvencyStageOutput: '', solvencyDurationMs: 0,
+        historyStageOutput: '', historyDurationMs: 0,
+        guaranteesStageOutput: '', guaranteesDurationMs: 0,
+        complianceStageOutput: '', complianceDurationMs: 0,
+        supervisorStageOutput: '', supervisorDurationMs: 0
       },
-      error: (err) => {
-        this.evaluationLog.push('Pipeline failure encountered.');
-        this.errorMessage = err.error?.message || 'AI pipeline execution failed.';
-        this.isEvaluating = false;
+      stageResults: []
+    };
+    
+    const token = localStorage.getItem('auth_token');
+    const url = `http://localhost:8081/api/dossiers/${this.selectedDossier.id}/ai-decision/stream?mode=${this.evalMode}`;
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'text/event-stream'
+        }
+      });
+      
+      if (!response.body) throw new Error('No readable stream available.');
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data:')) {
+            const dataStr = line.substring(5).trim();
+            if (!dataStr) continue;
+            const event = JSON.parse(dataStr);
+
+            if (event.evaluation) {
+               // Full EvaluationResultDto on complete
+               this.evaluationProgress = 100;
+               this.evaluationLog.push('Pipeline evaluation completed successfully!');
+               this.latestEvaluation = event;
+               this.isEvaluating = false;
+            } else {
+               // PipelineStageEvent
+               if (event.status === 'STARTED') {
+                 this.evaluationLog.push(`Running ${event.stageName} Agent Stage...`);
+                 this.evaluationProgress = event.progress;
+               } else if (event.status === 'COMPLETED') {
+                 this.evaluationLog.push(`Completed ${event.stageName} in ${event.durationMs}ms`);
+                 this.evaluationProgress = event.progress;
+                 const existingIdx = this.latestEvaluation!.stageResults.findIndex(s => s.stageName === event.stageName);
+                 const stageResult = {
+                    stageName: event.stageName,
+                    output: event.output,
+                    durationMs: event.durationMs
+                 };
+                 if (existingIdx >= 0) {
+                    this.latestEvaluation!.stageResults[existingIdx] = stageResult;
+                 } else {
+                    this.latestEvaluation!.stageResults.push(stageResult);
+                 }
+               }
+            }
+          }
+        }
       }
-    });
+    } catch (err: any) {
+      this.evaluationLog.push('Pipeline failure encountered.');
+      this.errorMessage = err.message || 'AI pipeline execution failed.';
+      this.isEvaluating = false;
+    }
   }
 
   // Simple Markdown Parser to render reports nicely in HTML

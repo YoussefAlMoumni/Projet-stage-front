@@ -11,14 +11,6 @@
         <p>Search, evaluate, and browse active credit dossiers, loans, and collaterals.</p>
       </div>
       <div class="header-actions">
-        <!-- Live Sync Control -->
-        <div class="live-sync-control active" title="Live Sync Active">
-          <span class="live-indicator" [class.syncing]="dataState.isDossiersSyncing | async"></span>
-          <span class="sync-text">
-            Live Sync Active
-            <span class="last-sync">(Last: {{ dataState.lastDossierSyncTime | date:'HH:mm:ss' }})</span>
-          </span>
-        </div>
         <button (click)="openCreateForm()" class="btn-primary">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           New request
@@ -268,32 +260,28 @@
               </div>
             </div>
 
-            <!-- Report -->
-            <div *ngIf="!isEvaluating && latestEvaluation" class="eval-report">
+            <!-- Report & Live Output -->
+            <div *ngIf="latestEvaluation" class="eval-report">
               <div class="report-meta">
                 <span>Evaluated {{ latestEvaluation.evaluation.createdAt | date:'medium' }}</span>
                 <span class="mode-badge">{{ latestEvaluation.evaluation.executionMode }}</span>
               </div>
 
-              <div class="stage-timings">
-                <div class="timing-item" *ngFor="let sr of latestEvaluation.stageResults">
-                  <span class="timing-stage">{{ sr.stageName }}</span>
-                  <span class="timing-ms">{{ sr.durationMs }}ms</span>
+              <div class="agent-cards-container">
+                <h4 class="section-label">Specialist AI Agents</h4>
+                <div class="agent-grid">
+                  <div class="agent-card" *ngFor="let stage of latestEvaluation.stageResults">
+                    <div class="agent-header">
+                      <span class="agent-name">{{ stage.stageName | titlecase }}</span>
+                      <span class="agent-time">{{ stage.durationMs }}ms</span>
+                    </div>
+                    <div class="agent-body" [innerHTML]="parseMarkdown(stage.output)"></div>
+                  </div>
                 </div>
               </div>
 
-              <div class="accordion-section">
-                <h4 class="section-label">Specialist outputs</h4>
-                <details *ngFor="let stage of latestEvaluation.stageResults" class="accordion-item">
-                  <summary class="accordion-summary">{{ stage.stageName | titlecase }} specialist</summary>
-                  <div class="accordion-body">
-                    <pre class="output-pre">{{ stage.output }}</pre>
-                  </div>
-                </details>
-              </div>
-
-              <div class="markdown-area">
-                <h4 class="section-label">Consolidated decision report</h4>
+              <div class="markdown-area" *ngIf="latestEvaluation.evaluation.supervisorStageOutput">
+                <h4 class="section-label">Consolidated decision report (Supervisor)</h4>
                 <div class="report-body" [innerHTML]="parseMarkdown(latestEvaluation.evaluation.supervisorStageOutput)"></div>
               </div>
             </div>

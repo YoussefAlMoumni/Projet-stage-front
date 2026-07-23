@@ -4,16 +4,6 @@
       <h1>Collateral Register</h1>
       <p class="subtitle">All secured guarantee assets across the credit portfolio with coverage analysis.</p>
     </div>
-    <div class="header-actions">
-      <!-- Live Sync Control -->
-      <div class="live-sync-control active" title="Live Sync Active">
-        <span class="live-indicator" [class.syncing]="dataState.isDossiersSyncing | async"></span>
-        <span class="sync-text">
-          Live Sync Active
-          <span class="last-sync">(Last: {{ dataState.lastDossierSyncTime | date:'HH:mm:ss' }})</span>
-        </span>
-      </div>
-    </div>
   </div>
 
   <div *ngIf="errorMessage" class="feedback-toast error">{{ errorMessage }}</div>

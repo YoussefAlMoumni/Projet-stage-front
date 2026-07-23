@@ -464,33 +464,71 @@
   color: var(--text-primary);
 }
 
-.accordion-section { display: flex; flex-direction: column; gap: 8px; }
-
 .section-label {
   font-size: 10px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.07em; color: var(--text-tertiary); margin-bottom: 4px;
+  letter-spacing: 0.07em; color: var(--text-tertiary); margin-bottom: 8px;
 }
 
-.accordion-item {
-  border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;
+.agent-cards-container { display: flex; flex-direction: column; gap: 12px; }
+
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
 }
 
-.accordion-summary {
-  padding: 10px 14px; cursor: pointer;
-  font-size: 13px; font-weight: 500; color: var(--text-primary);
-  list-style: none; user-select: none;
-  transition: background var(--ease);
-  &:hover { background: var(--bg); }
+.agent-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  transition: transform var(--ease), box-shadow var(--ease);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
 }
 
-.accordion-body {
-  padding: 12px 14px; border-top: 1px solid var(--border);
+.agent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
   background: var(--bg);
+  border-bottom: 1px solid var(--border);
 }
 
-.output-pre {
-  margin: 0; font-family: var(--font-mono); font-size: 12px;
-  color: var(--text-secondary); white-space: pre-wrap; line-height: 1.5;
+.agent-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.agent-time {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  background: var(--surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.agent-body {
+  padding: 16px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  
+  /* Markdown overrides for agent body */
+  p { margin-bottom: 8px; }
+  ul { margin-bottom: 8px; padding-left: 16px; }
+  li { margin-bottom: 4px; }
+  h1, h2, h3 { font-size: 13px; margin: 0 0 8px 0; color: var(--text-primary); }
 }
 
 .markdown-area { display: flex; flex-direction: column; gap: 8px; }
