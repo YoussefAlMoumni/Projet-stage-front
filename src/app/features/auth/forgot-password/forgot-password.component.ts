@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,9 +11,11 @@ import { ApiService } from '../../../core/services/api.service';
   templateUrl: './forgot-password.component.html',
   styleUrl: './forgot-password.component.scss'
 })
-export class ForgotPasswordComponent {
+export class ForgotPasswordComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
   private router = inject(Router);
+
+  private refreshInterval: any;
 
   email = '';
   step = 1;
@@ -109,6 +111,24 @@ export class ForgotPasswordComponent {
         alert('Failed to submit message to the IT Department.');
       }
     });
+  }
+
+  ngOnInit(): void {
+    // Dynamic UI refresh to clear messages automatically
+    this.refreshInterval = setInterval(() => {
+      if (this.errorMessage) {
+        this.errorMessage = '';
+      }
+      if (this.successMessage) {
+        this.successMessage = '';
+      }
+    }, 10000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
   }
 
   goBack(): void {
