@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -40,6 +40,7 @@ interface EvaluationResult {
 export class DossiersComponent implements OnInit, OnDestroy {
   public dataState = inject(DataStateService);
   private apiService = inject(ApiService);
+  private cdr = inject(ChangeDetectorRef);
 
   dossiers: Dossier[] = [];
   selectedDossier: Dossier | null = null;
@@ -50,6 +51,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
   successMessage = '';
 
   private sub?: Subscription;
+  private pollInterval: any;
 
   // Form step
   formStep = 1;
@@ -73,11 +75,21 @@ export class DossiersComponent implements OnInit, OnDestroy {
     if (this.dossiers.length === 0) {
       this.dataState.fetchDossiers(true);
     }
+
+    // Auto-refresh evaluation dynamically without manual clicks
+    this.pollInterval = setInterval(() => {
+      if (this.viewMode === 'detail' && this.selectedDossier && !this.isEvaluating && this.activeDetailTab === 'decision') {
+        this.fetchLatestEvaluation(this.selectedDossier.id!);
+      }
+    }, 5000);
   }
 
   ngOnDestroy(): void {
     if (this.sub) {
       this.sub.unsubscribe();
+    }
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
     }
   }
 
@@ -237,19 +249,26 @@ export class DossiersComponent implements OnInit, OnDestroy {
             if (!dataStr) continue;
             const event = JSON.parse(dataStr);
 
-            if (event.evaluation) {
+             if (event.evaluation) {
                // Full EvaluationResultDto on complete
                this.evaluationProgress = 100;
                this.evaluationLog.push('Pipeline evaluation completed successfully!');
                this.latestEvaluation = event;
                this.isEvaluating = false;
+               this.cdr.detectChanges();
             } else {
                // PipelineStageEvent
                if (event.status === 'STARTED') {
                  this.evaluationLog.push(`Running ${event.stageName} Agent Stage...`);
                  this.evaluationProgress = event.progress;
+                 this.cdr.detectChanges();
                } else if (event.status === 'COMPLETED') {
                  this.evaluationLog.push(`Completed ${event.stageName} in ${event.durationMs}ms`);
+                 // Show agent output message in terminal
+                 if (event.output) {
+                    const briefMsg = event.output.split('\n').filter((l: string) => l.trim().length > 0)[0];
+                    this.evaluationLog.push(`  > ${briefMsg}`);
+                 }
                  this.evaluationProgress = event.progress;
                  const existingIdx = this.latestEvaluation!.stageResults.findIndex(s => s.stageName === event.stageName);
                  const stageResult = {
@@ -262,6 +281,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
                  } else {
                     this.latestEvaluation!.stageResults.push(stageResult);
                  }
+                 this.cdr.detectChanges();
                }
             }
           }
@@ -271,7 +291,25 @@ export class DossiersComponent implements OnInit, OnDestroy {
       this.evaluationLog.push('Pipeline failure encountered.');
       this.errorMessage = err.message || 'AI pipeline execution failed.';
       this.isEvaluating = false;
+      this.cdr.detectChanges();
     }
+  }
+
+  updateDecisionStatus(status: string): void {
+    if (!this.selectedDossier) return;
+    this.isLoading = true;
+    this.apiService.put<Dossier>(`/dossiers/${this.selectedDossier.id}/status`, { status }).subscribe({
+      next: (updated) => {
+        this.selectedDossier!.status = updated.status;
+        this.successMessage = `Dossier status updated to ${status}.`;
+        this.dataState.fetchDossiers(true);
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Failed to update dossier status.';
+        this.isLoading = false;
+      }
+    });
   }
 
   // Simple Markdown Parser to render reports nicely in HTML

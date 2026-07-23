@@ -284,6 +284,16 @@
                 <h4 class="section-label">Consolidated decision report (Supervisor)</h4>
                 <div class="report-body" [innerHTML]="parseMarkdown(latestEvaluation.evaluation.supervisorStageOutput)"></div>
               </div>
+
+              <!-- Analyst Action Buttons -->
+              <div class="analyst-actions" *ngIf="latestEvaluation.evaluation.supervisorStageOutput && selectedDossier?.status === 'in_progress'">
+                <button (click)="updateDecisionStatus('approved')" class="btn-success action-btn" [disabled]="isLoading">
+                  Approve Dossier
+                </button>
+                <button (click)="updateDecisionStatus('rejected')" class="btn-danger action-btn" [disabled]="isLoading">
+                  Deny Dossier
+                </button>
+              </div>
             </div>
 
             <!-- Empty -->
