@@ -49,9 +49,14 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
     this.apiService.post<any>('/auth/forgot-password', { email: this.email }).subscribe({
       next: (res) => {
         this.isLoading = false;
-        this.maskedPhone = res.phoneNumber || '';
-        this.hasPhone = res.hasPhone || false;
-        this.step = 2;
+        // Immediately navigate to recovery methods page with the account data
+        this.router.navigate(['/forgot-password/recovery'], {
+          state: {
+            email: this.email,
+            maskedPhone: res.phoneNumber || '',
+            hasPhone: res.hasPhone || false
+          }
+        });
       },
       error: (err) => {
         this.isLoading = false;

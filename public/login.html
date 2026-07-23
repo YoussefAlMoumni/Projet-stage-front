@@ -2,95 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>CreditFlow Login</title>
+  <title>CreditFlow</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="CreditFlow login.">
-  <meta name="theme-color" content="#f5f5f2">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="creditflow.css">
+  <!-- Immediately redirect to the Angular SPA login page -->
+  <meta http-equiv="refresh" content="0;url=/login">
+  <script>window.location.replace('/login');</script>
 </head>
 <body>
-  <main class="page-shell">
-    <nav class="topbar" aria-label="Primary navigation">
-      <a class="brand" href="login.html" aria-label="CreditFlow login">
-        <img class="brand-mark" src="favicon.ico" alt="CreditFlow logo">
-        <span>CreditFlow</span>
-      </a>
-    </nav>
-
-    <section class="auth-page login-only">
-      <div class="auth-intro">
-        <p class="eyebrow">CreditFlow</p>
-        <h1>Sign in</h1>
-      </div>
-
-      <div class="auth-panel" aria-label="Authentication panel">
-        <form id="signInForm" class="auth-form">
-          <label class="field">
-            <span>Username</span>
-            <input id="signinUsername" name="username" autocomplete="username" required>
-          </label>
-          <label class="field password-field">
-            <span>Password</span>
-            <input id="signinPassword" name="password" type="password" autocomplete="current-password" required>
-            <button type="button" id="togglePassword" class="password-toggle" aria-label="Show password">
-              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
-                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5 16.5 9.51 16.5 12 14.49 16.5 12 16.5zm0-7.5c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
-              </svg>
-            </button>
-          </label>
-          <button id="signInButton" class="dark-btn" type="submit">Sign In</button>
-          <p id="signInStatus" class="status-message" role="status"></p>
-        </form>
-      </div>
-    </section>
-  </main>
-
-  <script src="auth.js"></script>
-  <script>
-    const signInForm = document.querySelector("#signInForm");
-    const signInStatus = document.querySelector("#signInStatus");
-    const passwordInput = document.querySelector("#signinPassword");
-    const togglePassword = document.querySelector("#togglePassword");
-    const signInButton = document.querySelector("#signInButton");
-
-    function setStatus(message, type) {
-      signInStatus.textContent = message;
-      signInStatus.className = `status-message ${type || ""}`.trim();
-    }
-
-    window.addEventListener("pageshow", () => {
-      setStatus("", "");
-    });
-
-    togglePassword.addEventListener("click", () => {
-      const isHidden = passwordInput.type === "password";
-      passwordInput.type = isHidden ? "text" : "password";
-      togglePassword.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
-    });
-
-    signInForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const username = document.querySelector("#signinUsername").value.trim();
-      const password = passwordInput.value;
-      if (signInButton) {
-        signInButton.disabled = true;
-      }
-      setStatus("Signing in…", "");
-      try {
-        await window.CreditFlowAuth.signIn(username, password);
-        window.location.href = "dashboard.html";
-      } catch (error) {
-        setStatus(error.message, "error");
-      } finally {
-        if (signInButton) {
-          signInButton.disabled = false;
-        }
-      }
-    });
-  </script>
+  <p>Redirecting to <a href="/login">CreditFlow Login</a>...</p>
 </body>
 </html>

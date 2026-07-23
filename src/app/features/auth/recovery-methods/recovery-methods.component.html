@@ -1,0 +1,80 @@
+<div class="auth-shell">
+  <div class="auth-card">
+    <!-- Header -->
+    <div class="auth-card-header">
+      <a (click)="goBack()" class="back-link" style="cursor:pointer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Back
+      </a>
+      <div class="auth-logo">
+        <div class="auth-logo-icon">
+          <img src="logo.png" alt="Logo" class="brand-logo-img" />
+        </div>
+        CreditFlow
+      </div>
+      <h1>Recovery methods</h1>
+      <p>Where should we send the verification code?</p>
+    </div>
+
+    <!-- Recovery method selection -->
+    <div class="auth-card-body">
+      <div class="channel-list">
+        <!-- Email channel -->
+        <button (click)="sendOtp('email')" [disabled]="isLoading" class="channel-btn">
+          <div class="channel-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <div class="channel-text">
+            <span class="channel-label">Email</span>
+            <span class="channel-value">{{ email }}</span>
+          </div>
+          <span *ngIf="isLoading && selectedMethod === 'email'" class="channel-spinner">
+            <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          </span>
+          <svg *ngIf="!(isLoading && selectedMethod === 'email')" class="channel-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- SMS channel (only if user has a phone) -->
+        <button *ngIf="hasPhone" (click)="sendOtp('sms')" [disabled]="isLoading" class="channel-btn">
+          <div class="channel-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+          </div>
+          <div class="channel-text">
+            <span class="channel-label">SMS</span>
+            <span class="channel-value">{{ maskedPhone }}</span>
+          </div>
+          <span *ngIf="isLoading && selectedMethod === 'sms'" class="channel-spinner">
+            <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          </span>
+          <svg *ngIf="!(isLoading && selectedMethod === 'sms')" class="channel-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="errorMessage" class="alert alert-error">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ errorMessage }}
+      </div>
+
+      <!-- OTP success result -->
+      <div *ngIf="showOtpResult" class="alert alert-success">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <div>
+          <strong>{{ successMessage }}</strong>
+          <br>
+          Simulated code: <code class="otp-code">{{ otpCode }}</code>
+        </div>
+      </div>
+
+      <div class="auth-aux">
+        <button (click)="goBack()" class="aux-btn">Use a different email</button>
+      </div>
+    </div>
+  </div>
+</div>
