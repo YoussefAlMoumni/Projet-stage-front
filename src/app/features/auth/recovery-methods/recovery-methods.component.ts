@@ -24,6 +24,7 @@ export class RecoveryMethodsComponent implements OnInit {
   otpCode: string | null = null;
   selectedMethod: 'email' | 'sms' | null = null;
   showOtpResult = false;
+  private messageTimeout?: any;
 
   constructor() {
     // Must be read in constructor — getCurrentNavigation() returns null after routing is complete
@@ -44,6 +45,27 @@ export class RecoveryMethodsComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    if (this.messageTimeout) {
+      clearTimeout(this.messageTimeout);
+    }
+  }
+
+  showMessage(type: 'success' | 'error', msg: string) {
+    if (type === 'success') {
+      this.successMessage = msg;
+      this.errorMessage = '';
+    } else {
+      this.errorMessage = msg;
+      this.successMessage = '';
+    }
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
+    this.messageTimeout = setTimeout(() => {
+      this.successMessage = '';
+      this.errorMessage = '';
+    }, 3000);
+  }
+
   sendOtp(method: 'email' | 'sms'): void {
     this.isLoading = true;
     this.errorMessage = '';
@@ -53,15 +75,15 @@ export class RecoveryMethodsComponent implements OnInit {
       next: (res) => {
         this.isLoading = false;
         this.otpCode = res.otp || '123456';
-        this.successMessage = `Simulated OTP code sent via ${method.toUpperCase()}.`;
+        this.showMessage('success', `Simulated OTP code sent via ${method.toUpperCase()}.`);
         this.showOtpResult = true;
       },
       error: (err) => {
         this.isLoading = false;
         if (err.status === 429) {
-          this.errorMessage = 'Too many attempts. Please try again in 15 minutes.';
+          this.showMessage('error', 'Too many attempts. Please try again in 15 minutes.');
         } else {
-          this.errorMessage = 'Failed to trigger OTP delivery.';
+          this.showMessage('error', 'Failed to trigger OTP delivery.');
         }
       }
     });

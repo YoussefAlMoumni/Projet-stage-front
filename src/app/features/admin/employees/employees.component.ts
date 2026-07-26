@@ -22,6 +22,7 @@ export class EmployeesComponent implements OnInit, OnDestroy {
   errorMessage = '';
   successMessage = '';
   private sub?: Subscription;
+  private messageTimeout?: any;
 
   // Modal Control
   showModal = false;
@@ -47,6 +48,22 @@ export class EmployeesComponent implements OnInit, OnDestroy {
     if (this.sub) {
       this.sub.unsubscribe();
     }
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
+  }
+
+  showMessage(type: 'success' | 'error', msg: string) {
+    if (type === 'success') {
+      this.successMessage = msg;
+      this.errorMessage = '';
+    } else {
+      this.errorMessage = msg;
+      this.successMessage = '';
+    }
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
+    this.messageTimeout = setTimeout(() => {
+      this.successMessage = '';
+      this.errorMessage = '';
+    }, 3000);
   }
 
   getEmptyUser(): User {
@@ -161,12 +178,12 @@ export class EmployeesComponent implements OnInit, OnDestroy {
       
       this.apiService.put<User>(`/users/${payload.id}`, payload).subscribe({
         next: () => {
-          this.successMessage = 'User updated successfully.';
+          this.showMessage('success', 'User updated successfully.');
           this.dataState.fetchUsers(true); // Sync real state
           this.isLoading = false;
         },
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Failed to update user.';
+          this.showMessage('error', err.error?.message || 'Failed to update user.');
           this.dataState.fetchUsers(true); // Revert on failure
           this.isLoading = false;
         }
@@ -179,12 +196,12 @@ export class EmployeesComponent implements OnInit, OnDestroy {
 
       this.apiService.post<User>('/users', payload).subscribe({
         next: () => {
-          this.successMessage = 'User created successfully.';
+          this.showMessage('success', 'User created successfully.');
           this.dataState.fetchUsers(true);
           this.isLoading = false;
         },
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Failed to create user.';
+          this.showMessage('error', err.error?.message || 'Failed to create user.');
           this.dataState.fetchUsers(true);
           this.isLoading = false;
         }
@@ -206,12 +223,12 @@ export class EmployeesComponent implements OnInit, OnDestroy {
 
     this.apiService.delete<any>(`/users/${id}`).subscribe({
       next: (res) => {
-        this.successMessage = res.message || 'User deleted.';
+        this.showMessage('success', res.message || 'User deleted.');
         this.dataState.fetchUsers(true);
         this.isLoading = false;
       },
       error: (err) => {
-        this.errorMessage = err.error?.message || 'Failed to delete user.';
+        this.showMessage('error', err.error?.message || 'Failed to delete user.');
         this.dataState.fetchUsers(true); // Revert
         this.isLoading = false;
       }

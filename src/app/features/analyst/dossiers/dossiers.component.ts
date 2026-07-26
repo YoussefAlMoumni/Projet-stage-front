@@ -53,6 +53,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
 
   private sub?: Subscription;
   private pollInterval: any;
+  private messageTimeout?: any;
 
   // Form step
   formStep = 1;
@@ -93,6 +94,22 @@ export class DossiersComponent implements OnInit, OnDestroy {
     if (this.pollInterval) {
       clearInterval(this.pollInterval);
     }
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
+  }
+
+  showMessage(type: 'success' | 'error', msg: string) {
+    if (type === 'success') {
+      this.successMessage = msg;
+      this.errorMessage = '';
+    } else {
+      this.errorMessage = msg;
+      this.successMessage = '';
+    }
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
+    this.messageTimeout = setTimeout(() => {
+      this.successMessage = '';
+      this.errorMessage = '';
+    }, 3000);
   }
 
   getEmptyDossier(): Dossier {
@@ -211,12 +228,12 @@ export class DossiersComponent implements OnInit, OnDestroy {
       
       this.apiService.post<Dossier>('/dossiers', this.newDossier).subscribe({
         next: () => {
-          this.successMessage = 'Dossier created successfully.';
+          this.showMessage('success', 'Dossier created successfully.');
           this.dataState.fetchDossiers(true); // Sync
           this.isLoading = false;
         },
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Failed to create dossier.';
+          this.showMessage('error', err.error?.message || 'Failed to create dossier.');
           this.dataState.fetchDossiers(true); // Revert
           this.isLoading = false;
         }
@@ -225,12 +242,12 @@ export class DossiersComponent implements OnInit, OnDestroy {
       this.viewMode = 'list';
       this.apiService.put<Dossier>(`/dossiers/${this.newDossier.id}`, this.newDossier).subscribe({
         next: () => {
-          this.successMessage = 'Dossier updated successfully.';
+          this.showMessage('success', 'Dossier updated successfully.');
           this.dataState.fetchDossiers(true); // Sync
           this.isLoading = false;
         },
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Failed to update dossier.';
+          this.showMessage('error', err.error?.message || 'Failed to update dossier.');
           this.dataState.fetchDossiers(true); // Revert
           this.isLoading = false;
         }
@@ -251,11 +268,11 @@ export class DossiersComponent implements OnInit, OnDestroy {
 
     this.apiService.delete<any>(`/dossiers/${id}`).subscribe({
       next: () => {
-        this.successMessage = 'Dossier deleted successfully.';
+        this.showMessage('success', 'Dossier deleted successfully.');
         this.dataState.fetchDossiers(true); // Sync
       },
       error: () => {
-        this.errorMessage = 'Failed to delete dossier.';
+        this.showMessage('error', 'Failed to delete dossier.');
         this.dataState.fetchDossiers(true); // Revert on failure
       }
     });
@@ -356,7 +373,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
       }
     } catch (err: any) {
       this.evaluationLog.push('Pipeline failure encountered.');
-      this.errorMessage = err.message || 'AI pipeline execution failed.';
+      this.showMessage('error', err.message || 'AI pipeline execution failed.');
       this.isEvaluating = false;
       this.cdr.detectChanges();
     }
@@ -368,12 +385,12 @@ export class DossiersComponent implements OnInit, OnDestroy {
     this.apiService.put<Dossier>(`/dossiers/${this.selectedDossier.id}/status`, { status }).subscribe({
       next: (updated) => {
         this.selectedDossier!.status = updated.status;
-        this.successMessage = `Dossier status updated to ${status}.`;
+        this.showMessage('success', `Dossier status updated to ${status}.`);
         this.dataState.fetchDossiers(true);
         this.isLoading = false;
       },
       error: (err) => {
-        this.errorMessage = err.error?.message || 'Failed to update dossier status.';
+        this.showMessage('error', err.error?.message || 'Failed to update dossier status.');
         this.isLoading = false;
       }
     });

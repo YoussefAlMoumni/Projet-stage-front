@@ -22,6 +22,7 @@ export class PromptsComponent implements OnInit, OnDestroy {
   successMessage = '';
   errorMessage = '';
   private sub?: Subscription;
+  private messageTimeout?: any;
 
   activeStage: string = 'solvency';
   stages: string[] = ['solvency', 'history', 'guarantees', 'compliance', 'supervisor'];
@@ -40,6 +41,7 @@ export class PromptsComponent implements OnInit, OnDestroy {
     if (this.sub) {
       this.sub.unsubscribe();
     }
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
   }
 
   getConfigForStage(stage: string): PromptConfig | undefined {
@@ -66,11 +68,18 @@ export class PromptsComponent implements OnInit, OnDestroy {
     this.apiService.put<any>(`/prompts/${config.modelId}`, payload).subscribe({
       next: (res) => {
         this.successMessage = `Successfully updated ${config.stageName.toUpperCase()} configurations.`;
+        if (this.messageTimeout) clearTimeout(this.messageTimeout);
+        this.messageTimeout = setTimeout(() => this.successMessage = '', 3000);
+        
         this.dataState.fetchPrompts(true); // Sync real state
         this.isLoading = false;
       },
       error: (err) => {
+        this.successMessage = '';
         this.errorMessage = err.error?.message || 'Failed to save prompt configuration.';
+        if (this.messageTimeout) clearTimeout(this.messageTimeout);
+        this.messageTimeout = setTimeout(() => this.errorMessage = '', 3000);
+
         this.dataState.fetchPrompts(true); // Revert
         this.isLoading = false;
       }

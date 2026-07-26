@@ -15,7 +15,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
   private router = inject(Router);
 
-  private refreshInterval: any;
+  private messageTimeout?: any;
 
   email = '';
   step = 1;
@@ -61,9 +61,9 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.isLoading = false;
         if (err.status === 429) {
-          this.errorMessage = 'Too many requests. Please try again in 15 minutes.';
+          this.showMessage('error', 'Too many requests. Please try again in 15 minutes.');
         } else {
-          this.errorMessage = err.error?.message || 'Email address not found.';
+          this.showMessage('error', err.error?.message || 'Email address not found.');
         }
       }
     });
@@ -78,15 +78,15 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.isLoading = false;
         this.otpCode = res.otp || '123456';
-        this.successMessage = `Simulated OTP code sent via ${method.toUpperCase()}.`;
+        this.showMessage('success', `Simulated OTP code sent via ${method.toUpperCase()}.`);
         this.showOtpResult = true;
       },
       error: (err) => {
         this.isLoading = false;
         if (err.status === 429) {
-          this.errorMessage = 'Too many attempts. Please try again in 15 minutes.';
+          this.showMessage('error', 'Too many attempts. Please try again in 15 minutes.');
         } else {
-          this.errorMessage = 'Failed to trigger OTP delivery.';
+          this.showMessage('error', 'Failed to trigger OTP delivery.');
         }
       }
     });
@@ -119,21 +119,28 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Dynamic UI refresh to clear messages automatically
-    this.refreshInterval = setInterval(() => {
-      if (this.errorMessage) {
-        this.errorMessage = '';
-      }
-      if (this.successMessage) {
-        this.successMessage = '';
-      }
-    }, 10000);
+    // Left empty since we now use showMessage helper
   }
 
   ngOnDestroy(): void {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
+    if (this.messageTimeout) {
+      clearTimeout(this.messageTimeout);
     }
+  }
+
+  showMessage(type: 'success' | 'error', msg: string) {
+    if (type === 'success') {
+      this.successMessage = msg;
+      this.errorMessage = '';
+    } else {
+      this.errorMessage = msg;
+      this.successMessage = '';
+    }
+    if (this.messageTimeout) clearTimeout(this.messageTimeout);
+    this.messageTimeout = setTimeout(() => {
+      this.successMessage = '';
+      this.errorMessage = '';
+    }, 3000);
   }
 
   goBack(): void {
