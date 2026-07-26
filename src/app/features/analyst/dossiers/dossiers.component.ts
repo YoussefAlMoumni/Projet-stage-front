@@ -8,6 +8,7 @@ import { Dossier, Loan, Collateral } from '../../../core/models/types';
 interface StageResult {
   stageName: string;
   output: string;
+  summary?: string;
   durationMs: number;
 }
 
@@ -66,6 +67,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
   evaluationLog: string[] = [];
   latestEvaluation: EvaluationResult | null = null;
   activeDetailTab: 'overview' | 'loans' | 'collaterals' | 'decision' = 'overview';
+  stageExpandedStates: Record<string, boolean> = {};
 
   ngOnInit(): void {
     this.sub = this.dataState.dossiers$.subscribe(data => {
@@ -205,6 +207,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
     this.evaluationProgress = 10;
     this.evaluationLog = ['Initializing pipeline orchestrator...', `Execution mode: ${this.evalMode}`];
     this.activeDetailTab = 'decision';
+    this.stageExpandedStates = {};
     
     // Initialize empty evaluation object to store live dynamic results
     this.latestEvaluation = {
@@ -220,10 +223,12 @@ export class DossiersComponent implements OnInit, OnDestroy {
     };
     
     const token = localStorage.getItem('auth_token');
-    const url = `http://localhost:8081/api/dossiers/${this.selectedDossier.id}/ai-decision/stream?mode=${this.evalMode}`;
+    const url = `/api/dossiers/${this.selectedDossier.id}/ai-decision/stream?mode=${this.evalMode}`;
 
     try {
       const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'text/event-stream'
@@ -264,16 +269,18 @@ export class DossiersComponent implements OnInit, OnDestroy {
                  this.cdr.detectChanges();
                } else if (event.status === 'COMPLETED') {
                  this.evaluationLog.push(`Completed ${event.stageName} in ${event.durationMs}ms`);
-                 // Show agent output message in terminal
-                 if (event.output) {
-                    const briefMsg = event.output.split('\n').filter((l: string) => l.trim().length > 0)[0];
-                    this.evaluationLog.push(`  > ${briefMsg}`);
+                 if (event.summary) {
+                   this.evaluationLog.push(`  • ${event.summary}`);
+                 } else if (event.output) {
+                   const briefMsg = event.output.split('\n').filter((l: string) => l.trim().length > 0)[0];
+                   this.evaluationLog.push(`  > ${briefMsg}`);
                  }
                  this.evaluationProgress = event.progress;
                  const existingIdx = this.latestEvaluation!.stageResults.findIndex(s => s.stageName === event.stageName);
                  const stageResult = {
                     stageName: event.stageName,
                     output: event.output,
+                    summary: event.summary ?? undefined,
                     durationMs: event.durationMs
                  };
                  if (existingIdx >= 0) {
@@ -313,6 +320,10 @@ export class DossiersComponent implements OnInit, OnDestroy {
   }
 
   // Simple Markdown Parser to render reports nicely in HTML
+  toggleStageDetails(stageName: string): void {
+    this.stageExpandedStates[stageName] = !this.stageExpandedStates[stageName];
+  }
+
   parseMarkdown(text: string | undefined): string {
     if (!text) return '';
     let html = text

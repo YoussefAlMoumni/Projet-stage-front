@@ -518,6 +518,30 @@
   border: 1px solid var(--border);
 }
 
+.agent-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  background: var(--surface);
+  transition: background var(--ease);
+  
+  &:hover {
+    background: var(--surface-hover, var(--surface-2, #f8fafc));
+  }
+
+  strong {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    flex: 1;
+    margin-right: 12px;
+    white-space: normal;
+  }
+}
+
 .agent-body {
   padding: 16px;
   font-size: 12px;
@@ -552,7 +576,7 @@
   margin-top: 16px;
 }
 
-.action-btn {
+.decision-btn {
   padding: 10px 16px;
   font-size: 13px;
   font-weight: 600;

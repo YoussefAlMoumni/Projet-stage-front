@@ -275,7 +275,11 @@
                       <span class="agent-name">{{ stage.stageName | titlecase }}</span>
                       <span class="agent-time">{{ stage.durationMs }}ms</span>
                     </div>
-                    <div class="agent-body" [innerHTML]="parseMarkdown(stage.output)"></div>
+                    <div class="agent-summary" (click)="toggleStageDetails(stage.stageName)">
+                      <strong>{{ stage.summary || (stage.output ? (stage.output.split('\n').filter(l => l.trim().length > 0)[0] || 'No summary available') : 'No summary available') }}</strong>
+                      <span class="summary-toggle">{{ stageExpandedStates[stage.stageName] ? '▾' : '▸' }}</span>
+                    </div>
+                    <div class="agent-body" *ngIf="stageExpandedStates[stage.stageName]" [innerHTML]="parseMarkdown(stage.output)"></div>
                   </div>
                 </div>
               </div>
@@ -287,10 +291,10 @@
 
               <!-- Analyst Action Buttons -->
               <div class="analyst-actions" *ngIf="latestEvaluation.evaluation.supervisorStageOutput && selectedDossier?.status === 'in_progress'">
-                <button (click)="updateDecisionStatus('approved')" class="btn-success action-btn" [disabled]="isLoading">
+                <button (click)="updateDecisionStatus('approved')" class="btn-success decision-btn" [disabled]="isLoading">
                   Approve Dossier
                 </button>
-                <button (click)="updateDecisionStatus('rejected')" class="btn-danger action-btn" [disabled]="isLoading">
+                <button (click)="updateDecisionStatus('rejected')" class="btn-danger decision-btn" [disabled]="isLoading">
                   Deny Dossier
                 </button>
               </div>
