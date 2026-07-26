@@ -46,7 +46,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
   dossiers: Dossier[] = [];
   selectedDossier: Dossier | null = null;
   
-  viewMode: 'list' | 'create' | 'detail' = 'list';
+  viewMode: 'list' | 'create' | 'detail' | 'edit' = 'list';
   isLoading = false;
   errorMessage = '';
   successMessage = '';
@@ -123,6 +123,50 @@ export class DossiersComponent implements OnInit, OnDestroy {
     this.newDossier = this.getEmptyDossier();
   }
 
+  openEditForm(dossier: Dossier): void {
+    this.viewMode = 'edit';
+    this.formStep = 1;
+    // Deep clone the dossier to avoid mutating state before saving
+    this.newDossier = JSON.parse(JSON.stringify(dossier));
+    // Ensure lists exist
+    if (!this.newDossier.loans) this.newDossier.loans = [];
+    this.newDossier.loans.forEach(loan => {
+      if (!loan.collaterals) loan.collaterals = [];
+    });
+  }
+
+  addLoan(): void {
+    if (!this.newDossier.loans) this.newDossier.loans = [];
+    this.newDossier.loans.push({
+      amount: 0,
+      interestRate: 0,
+      termMonths: 12,
+      paymentFrequency: 'monthly',
+      status: 'active',
+      collaterals: []
+    });
+  }
+
+  removeLoan(index: number): void {
+    this.newDossier.loans?.splice(index, 1);
+  }
+
+  addCollateral(loanIndex: number): void {
+    const loan = this.newDossier.loans![loanIndex];
+    if (!loan.collaterals) loan.collaterals = [];
+    loan.collaterals.push({
+      type: 'real_estate',
+      description: '',
+      estimatedValue: 0,
+      valuationDate: new Date().toISOString().substring(0, 10),
+      status: 'active'
+    });
+  }
+
+  removeCollateral(loanIndex: number, colIndex: number): void {
+    this.newDossier.loans![loanIndex].collaterals?.splice(colIndex, 1);
+  }
+
   viewDossierDetails(dossier: Dossier): void {
     this.selectedDossier = dossier;
     this.viewMode = 'detail';
@@ -159,23 +203,39 @@ export class DossiersComponent implements OnInit, OnDestroy {
 
   saveDossier(): void {
     this.isLoading = true;
-    // Optimistic UI update
-    const tempDossier = { ...this.newDossier, id: Date.now() }; // Fake ID for immediate rendering
-    this.dataState.addDossierOptimistically(tempDossier);
-    this.viewMode = 'list';
     
-    this.apiService.post<Dossier>('/dossiers', this.newDossier).subscribe({
-      next: () => {
-        this.successMessage = 'Dossier created successfully.';
-        this.dataState.fetchDossiers(true); // Sync real data with DB
-        this.isLoading = false;
-      },
-      error: (err) => {
-        this.errorMessage = err.error?.message || 'Failed to create dossier.';
-        this.dataState.fetchDossiers(true); // Revert on failure
-        this.isLoading = false;
-      }
-    });
+    if (this.viewMode === 'create') {
+      const tempDossier = { ...this.newDossier, id: Date.now() }; // Fake ID
+      this.dataState.addDossierOptimistically(tempDossier);
+      this.viewMode = 'list';
+      
+      this.apiService.post<Dossier>('/dossiers', this.newDossier).subscribe({
+        next: () => {
+          this.successMessage = 'Dossier created successfully.';
+          this.dataState.fetchDossiers(true); // Sync
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Failed to create dossier.';
+          this.dataState.fetchDossiers(true); // Revert
+          this.isLoading = false;
+        }
+      });
+    } else if (this.viewMode === 'edit') {
+      this.viewMode = 'list';
+      this.apiService.put<Dossier>(`/dossiers/${this.newDossier.id}`, this.newDossier).subscribe({
+        next: () => {
+          this.successMessage = 'Dossier updated successfully.';
+          this.dataState.fetchDossiers(true); // Sync
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Failed to update dossier.';
+          this.dataState.fetchDossiers(true); // Revert
+          this.isLoading = false;
+        }
+      });
+    }
   }
 
   deleteDossier(id: number): void {

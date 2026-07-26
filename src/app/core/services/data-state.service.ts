@@ -21,7 +21,7 @@ export class DataStateService implements OnDestroy {
   public prompts$ = this.promptsSubject.asObservable();
 
   // Polling State
-  private refreshSub?: any;
+  private eventSource?: EventSource;
   
   public lastDossierSyncTime: Date = new Date();
   public lastAnalystSyncTime: Date = new Date();
@@ -105,18 +105,38 @@ export class DataStateService implements OnDestroy {
   public startLiveSync(): void {
     this.stopLiveSync();
 
-    this.refreshSub = setInterval(() => {
-      this.fetchDossiers(true);
-      this.fetchAnalysts(true);
-      this.fetchUsers(true);
-      this.fetchPrompts(true);
-    }, 10000);
+    // Initial fetch
+    this.fetchDossiers(true);
+    this.fetchAnalysts(true);
+    this.fetchUsers(true);
+    this.fetchPrompts(true);
+
+    this.eventSource = new EventSource('http://localhost:8081/api/events/stream');
+    this.eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'DOSSIERS_CHANGED') {
+          this.fetchDossiers(true);
+        } else if (data.type === 'USERS_CHANGED') {
+          this.fetchUsers(true);
+        } else if (data.type === 'ANALYSTS_CHANGED') {
+          this.fetchAnalysts(true);
+        } else if (data.type === 'PROMPTS_CHANGED') {
+          this.fetchPrompts(true);
+        }
+      } catch (e) {
+        console.error('Failed to parse SSE event', e);
+      }
+    };
+    this.eventSource.onerror = (e) => {
+      console.error('SSE Error:', e);
+    };
   }
 
   public stopLiveSync(): void {
-    if (this.refreshSub) {
-      clearInterval(this.refreshSub);
-      this.refreshSub = undefined;
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = undefined;
     }
   }
 
