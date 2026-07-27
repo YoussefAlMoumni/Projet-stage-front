@@ -36,7 +36,7 @@
             <td (click)="viewDossierDetails(dossier)"><span class="client-pill" [ngClass]="dossier.clientType">{{ dossier.clientType }}</span></td>
             <td (click)="viewDossierDetails(dossier)">{{ dossier.loans[0]?.amount | currency:'EUR':'symbol':'1.0-0' }}</td>
             <td (click)="viewDossierDetails(dossier)"><span class="status-pill" [ngClass]="dossier.status">{{ dossier.status }}</span></td>
-            <td (click)="viewDossierDetails(dossier)" class="muted-cell">{{ dossier.assignedAnalyst?.username || 'Unassigned' }}</td>
+            <td (click)="viewDossierDetails(dossier)" class="muted-cell">{{ dossier.assignedAnalyst ? (dossier.assignedAnalyst.firstName + ' ' + dossier.assignedAnalyst.lastName) : 'Unassigned' }}</td>
             <td class="actions-cell">
               <button (click)="viewDossierDetails(dossier)" class="action-btn" title="View details">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -280,7 +280,7 @@
           <span class="status-pill" [ngClass]="selectedDossier.status">{{ selectedDossier.status }}</span>
           <h1>Dossier {{ selectedDossier.siren }}</h1>
         </div>
-        <p>Analyst: <strong>{{ selectedDossier.assignedAnalyst?.username || 'Unassigned' }}</strong></p>
+        <p>Analyst: <strong>{{ selectedDossier.assignedAnalyst ? (selectedDossier.assignedAnalyst.firstName + ' ' + selectedDossier.assignedAnalyst.lastName) : 'Unassigned' }}</strong></p>
       </div>
       <button (click)="viewMode = 'list'" class="btn-secondary">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>

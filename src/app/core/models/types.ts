@@ -23,7 +23,7 @@ export interface Dossier {
   clientType: string;
   status: string;
   creationDate?: string;
-  assignedAnalyst?: any;
+  assignedAnalyst?: { id: number; username: string; firstName: string; lastName: string; role: string; };
   loans: Loan[];
   name?: string;
   montantDemande?: string;

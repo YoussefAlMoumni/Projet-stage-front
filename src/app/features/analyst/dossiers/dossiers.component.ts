@@ -384,7 +384,13 @@ export class DossiersComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.apiService.put<Dossier>(`/dossiers/${this.selectedDossier.id}/status`, { status }).subscribe({
       next: (updated) => {
+        // Update the detail view header immediately
         this.selectedDossier!.status = updated.status;
+        // Also update the row in the list so the badge reflects the new status without a full refetch
+        const idx = this.dossiers.findIndex(d => d.id === updated.id);
+        if (idx !== -1) {
+          this.dossiers[idx] = { ...this.dossiers[idx], status: updated.status };
+        }
         this.showMessage('success', `Dossier status updated to ${status}.`);
         this.dataState.fetchDossiers(true);
         this.isLoading = false;
