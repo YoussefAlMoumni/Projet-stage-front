@@ -62,13 +62,22 @@ export class DossiersComponent implements OnInit, OnDestroy {
   newDossier: Dossier = this.getEmptyDossier();
 
   // Smart Evaluation Variables
-  evalMode: 'FAST' | 'FULL' = 'FAST';
+  evalMode: 'FAST' = 'FAST';
   isEvaluating = false;
   evaluationProgress = 0; // 0 to 100
   evaluationLog: string[] = [];
   latestEvaluation: EvaluationResult | null = null;
   activeDetailTab: 'overview' | 'loans' | 'collaterals' | 'decision' = 'overview';
   stageExpandedStates: Record<string, boolean> = {};
+
+  // Granular Agent States for UI
+  agentStates: Record<string, { status: 'IDLE' | 'RUNNING' | 'COMPLETED' | 'ERROR', decision?: string }> = {
+    solvency: { status: 'IDLE' },
+    history: { status: 'IDLE' },
+    guarantees: { status: 'IDLE' },
+    compliance: { status: 'IDLE' },
+    supervisor: { status: 'IDLE' }
+  };
 
   ngOnInit(): void {
     this.sub = this.dataState.dossiers$.subscribe(data => {
@@ -286,6 +295,11 @@ export class DossiersComponent implements OnInit, OnDestroy {
     this.activeDetailTab = 'decision';
     this.stageExpandedStates = {};
     
+    // Reset agent states
+    Object.keys(this.agentStates).forEach(key => {
+      this.agentStates[key] = { status: 'IDLE' };
+    });
+    
     // Initialize empty evaluation object to store live dynamic results
     this.latestEvaluation = {
       evaluation: {
@@ -340,19 +354,39 @@ export class DossiersComponent implements OnInit, OnDestroy {
                this.cdr.detectChanges();
             } else {
                // PipelineStageEvent
+               const stageKey = event.stageName.toLowerCase();
+               
                if (event.status === 'STARTED') {
                  this.evaluationLog.push(`Running ${event.stageName} Agent Stage...`);
                  this.evaluationProgress = event.progress;
+                 if (this.agentStates[stageKey]) {
+                   this.agentStates[stageKey].status = 'RUNNING';
+                 }
                  this.cdr.detectChanges();
                } else if (event.status === 'COMPLETED') {
                  this.evaluationLog.push(`Completed ${event.stageName} in ${event.durationMs}ms`);
+                 let extractedDecision = 'INDETERMINEE';
                  if (event.summary) {
                    this.evaluationLog.push(`  • ${event.summary}`);
+                   // Try to parse DECISION: from summary
+                   const match = event.summary.match(/DECISION:\s*([A-Z]+)/);
+                   if (match && match[1]) {
+                     extractedDecision = match[1];
+                   }
                  } else if (event.output) {
                    const briefMsg = event.output.split('\n').filter((l: string) => l.trim().length > 0)[0];
                    this.evaluationLog.push(`  > ${briefMsg}`);
                  }
                  this.evaluationProgress = event.progress;
+                 
+                 if (this.agentStates[stageKey]) {
+                   this.agentStates[stageKey].status = 'COMPLETED';
+                   // Supervisor doesn't have a simple decision enum in the same way, but it's okay to default
+                   if (stageKey !== 'supervisor') {
+                       this.agentStates[stageKey].decision = extractedDecision;
+                   }
+                 }
+
                  const existingIdx = this.latestEvaluation!.stageResults.findIndex(s => s.stageName === event.stageName);
                  const stageResult = {
                     stageName: event.stageName,
@@ -366,6 +400,18 @@ export class DossiersComponent implements OnInit, OnDestroy {
                     this.latestEvaluation!.stageResults.push(stageResult);
                  }
                  this.cdr.detectChanges();
+               } else if (event.status === 'ERROR') {
+                 this.evaluationLog.push(`Pipeline error: ${event.message || 'Unknown error'}`);
+                 Object.keys(this.agentStates).forEach(key => {
+                   if (this.agentStates[key].status === 'RUNNING') {
+                     this.agentStates[key].status = 'ERROR';
+                     this.agentStates[key].decision = 'ABORTED';
+                   }
+                 });
+                 this.isEvaluating = false;
+                 this.latestEvaluation = null;
+                 this.cdr.detectChanges();
+                 break; // Stop reading the stream
                }
             }
           }
@@ -376,6 +422,23 @@ export class DossiersComponent implements OnInit, OnDestroy {
       this.showMessage('error', err.message || 'AI pipeline execution failed.');
       this.isEvaluating = false;
       this.cdr.detectChanges();
+    }
+  }
+
+  async stopSmartDecision(): Promise<void> {
+    if (!this.selectedDossier || !this.isEvaluating) return;
+    
+    const token = localStorage.getItem('auth_token');
+    const url = `/api/dossiers/${this.selectedDossier.id}/ai-decision/stop`;
+
+    try {
+      await fetch(url, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      this.evaluationLog.push('Stop request sent...');
+    } catch (err) {
+      console.error('Failed to stop pipeline', err);
     }
   }
 

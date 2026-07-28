@@ -310,9 +310,8 @@
 }
 
 .meta-label {
-  font-size: 10px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.07em;
-  color: var(--text-tertiary);
+  font-size: 11px; font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .meta-value {
@@ -329,9 +328,8 @@
 
 .data-list-header {
   padding: 8px 14px;
-  font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.07em;
-  color: var(--text-tertiary);
+  font-size: 12px; font-weight: 600;
+  color: var(--text-secondary);
   background: var(--surface-2);
   border-bottom: 1px solid var(--border);
 }
@@ -383,49 +381,232 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 0.9s linear infinite; }
 
-/* ── Evaluation ────────────────────────────────────────────── */
-.eval-loader { display: flex; flex-direction: column; gap: 16px; }
-
-.eval-progress-bar {
-  height: 4px; background: var(--border); border-radius: 99px; overflow: hidden;
+/* ── AI Pipeline Dashboard ────────────────────────────────────────────── */
+.pipeline-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl, 16px);
+  padding: 24px;
+  color: var(--text-primary);
 }
 
-.eval-progress-fill {
-  height: 100%; background: var(--blue-600);
-  border-radius: 99px; transition: width 0.4s ease;
-}
+.pipeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 12px;
+  margin-bottom: 8px;
 
-.eval-console {
-  background: #0f172a; border-radius: var(--radius-lg); overflow: hidden;
-}
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-.console-header {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px;
-  background: #1e293b;
-  font-size: 11px; color: rgba(255,255,255,0.4);
-  font-family: var(--font-mono);
-}
+  .pipeline-progress {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+    padding: 2px 8px;
+    border-radius: 99px;
+  }
 
-.console-dots {
-  display: flex; gap: 5px;
-  span {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    &:nth-child(1) { background: #ef4444; }
-    &:nth-child(2) { background: #f59e0b; }
-    &:nth-child(3) { background: #22c55e; }
+  .stop-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 4px 10px;
+    border-radius: var(--radius-md);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    &:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.2);
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 }
 
-.console-body {
-  padding: 14px; max-height: 220px; overflow-y: auto;
-  font-family: var(--font-mono); font-size: 12px; line-height: 1.6;
+.workers-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
-.console-line {
-  margin: 0 0 4px; color: rgba(255,255,255,0.75);
-  &:last-child { color: #60a5fa; }
+.agent-progress-card, .supervisor-progress-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &.running {
+    background: var(--surface);
+    border-color: var(--blue-500);
+    box-shadow: 0 4px 20px -2px rgba(59, 130, 246, 0.15);
+  }
+
+  &.completed {
+    border-color: var(--border-2);
+  }
+}
+
+.supervisor-progress-card {
+  width: 100%;
+  margin-top: 4px;
+  padding: 16px;
+}
+
+.card-icon {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 50%;
+  z-index: 2;
+  
+  .icon {
+    font-size: 16px;
+    z-index: 2;
+  }
+
+  .glow-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    opacity: 0;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+  }
+}
+
+.running .card-icon .glow-ring {
+  opacity: 1;
+  border-color: var(--blue-500);
+  animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+.card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.agent-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.running .agent-name {
+  color: var(--text-primary);
+}
+
+.progress-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--blue-600);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+.running .progress-fill {
+  animation: indeterminate-progress 2s infinite ease-in-out;
+}
+
+.completed .progress-fill {
+  width: 100%;
+  background: var(--border-2);
+}
+
+@keyframes indeterminate-progress {
+  0% { width: 0%; transform: translateX(-100%); }
+  50% { width: 100%; transform: translateX(0%); }
+  100% { width: 100%; transform: translateX(100%); }
+}
+
+.card-status {
+  padding-left: 8px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  
+  &-favorable {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.1);
+  }
+  
+  &-infavorable {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+  }
+  
+  &-indeterminee {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.1);
+  }
+  
+  &-supervisor {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+  }
 }
 
 /* ── Report ────────────────────────────────────────────────── */
@@ -529,7 +710,10 @@
   
   &:hover {
     background: var(--surface-hover, var(--surface-2, #f8fafc));
+    .summary-toggle { transform: translateX(3px); }
   }
+
+  .summary-toggle { transition: transform var(--ease); }
 
   strong {
     font-size: 13px;
@@ -609,4 +793,7 @@
 @media (max-width: 900px) {
   .detail-layout { grid-template-columns: 1fr; }
   .stage-timings { grid-template-columns: repeat(3, 1fr); }
+  .tab-content { padding: 16px; }
+  .pipeline-dashboard { padding: 16px; }
+  .workers-grid { grid-template-columns: 1fr; }
 }

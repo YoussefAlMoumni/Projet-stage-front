@@ -199,7 +199,7 @@ input, textarea, select { font-family: var(--font-sans); }
   font-size: 13px;
   font-weight: 500;
   border-radius: var(--radius-md);
-  transition: background var(--ease), border-color var(--ease), box-shadow var(--ease);
+  transition: background var(--ease), border-color var(--ease), box-shadow var(--ease), transform var(--ease);
   cursor: pointer;
   border: 1px solid transparent;
   white-space: nowrap;
@@ -212,7 +212,11 @@ input, textarea, select { font-family: var(--font-sans); }
   background: var(--blue-600);
   color: #fff;
 
-  &:hover:not(:disabled) { background: var(--blue-700); }
+  &:hover:not(:disabled) {
+    background: var(--blue-700);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  }
 }
 
 .btn-secondary {
@@ -221,7 +225,11 @@ input, textarea, select { font-family: var(--font-sans); }
   color: var(--text-primary);
   border-color: var(--border-2);
 
-  &:hover:not(:disabled) { background: var(--surface-2); }
+  &:hover:not(:disabled) {
+    background: var(--surface-2);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
 }
 
 .btn-ghost {
@@ -229,7 +237,11 @@ input, textarea, select { font-family: var(--font-sans); }
   background: transparent;
   color: var(--text-secondary);
 
-  &:hover:not(:disabled) { background: var(--surface-2); color: var(--text-primary); }
+  &:hover:not(:disabled) {
+    background: var(--surface-2);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+  }
 }
 
 .btn-danger {
@@ -238,7 +250,11 @@ input, textarea, select { font-family: var(--font-sans); }
   color: var(--red-700);
   border-color: var(--red-100);
 
-  &:hover:not(:disabled) { background: var(--red-50); }
+  &:hover:not(:disabled) {
+    background: var(--red-50);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
 }
 
 /* Form elements */
@@ -391,11 +407,11 @@ input, textarea, select { font-family: var(--font-sans); }
   border: 1px solid transparent;
   color: var(--text-tertiary);
   cursor: pointer;
-  transition: background var(--ease), color var(--ease), border-color var(--ease);
+  transition: background var(--ease), color var(--ease), border-color var(--ease), transform var(--ease);
   font-size: 13px;
 
-  &:hover              { background: var(--surface-2); border-color: var(--border); color: var(--text-primary); }
-  &.danger:hover       { background: var(--red-50);    border-color: var(--red-100); color: var(--red-700); }
+  &:hover              { background: var(--surface-2); border-color: var(--border); color: var(--text-primary); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  &.danger:hover       { background: var(--red-50);    border-color: var(--red-100); color: var(--red-700); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 }
 
 /* SVG icon helper */

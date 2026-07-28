@@ -347,19 +347,90 @@
           <!-- Decision -->
           <div *ngIf="activeDetailTab === 'decision'" class="tab-pane">
             <!-- Loading state -->
-            <div *ngIf="isEvaluating" class="eval-loader">
-              <div class="eval-progress-bar">
-                <div class="eval-progress-fill" [style.width.%]="evaluationProgress"></div>
-              </div>
-              <div class="eval-console">
-                <div class="console-header">
-                  <div class="console-dots">
-                    <span></span><span></span><span></span>
-                  </div>
-                  <span>Pipeline — {{ evaluationProgress }}%</span>
+            <div *ngIf="isEvaluating" class="pipeline-dashboard">
+              <div class="pipeline-header">
+                <h3>Pipeline Execution</h3>
+                <div class="header-actions">
+                  <span class="pipeline-progress">{{ evaluationProgress }}%</span>
+                  <button class="stop-btn" (click)="stopSmartDecision()" [disabled]="!isEvaluating">Stop Pipeline</button>
                 </div>
-                <div class="console-body">
-                  <p *ngFor="let log of evaluationLog" class="console-line">&gt; {{ log }}</p>
+              </div>
+
+              <!-- Worker Agents Grid -->
+              <div class="workers-grid">
+                <!-- Solvency -->
+                <div class="agent-progress-card" [ngClass]="agentStates['solvency'].status.toLowerCase()">
+                  <div class="card-icon">
+                    <span class="icon">💰</span>
+                    <div class="glow-ring"></div>
+                  </div>
+                  <div class="card-content">
+                    <span class="agent-name">Solvency</span>
+                    <div class="progress-track"><div class="progress-fill"></div></div>
+                  </div>
+                  <div class="card-status" *ngIf="agentStates['solvency'].status === 'COMPLETED'">
+                    <span class="badge" [ngClass]="'badge-' + agentStates['solvency'].decision?.toLowerCase()">{{ agentStates['solvency'].decision }}</span>
+                  </div>
+                </div>
+
+                <!-- History -->
+                <div class="agent-progress-card" [ngClass]="agentStates['history'].status.toLowerCase()">
+                  <div class="card-icon">
+                    <span class="icon">📜</span>
+                    <div class="glow-ring"></div>
+                  </div>
+                  <div class="card-content">
+                    <span class="agent-name">History</span>
+                    <div class="progress-track"><div class="progress-fill"></div></div>
+                  </div>
+                  <div class="card-status" *ngIf="agentStates['history'].status === 'COMPLETED'">
+                    <span class="badge" [ngClass]="'badge-' + agentStates['history'].decision?.toLowerCase()">{{ agentStates['history'].decision }}</span>
+                  </div>
+                </div>
+
+                <!-- Guarantees -->
+                <div class="agent-progress-card" [ngClass]="agentStates['guarantees'].status.toLowerCase()">
+                  <div class="card-icon">
+                    <span class="icon">🛡️</span>
+                    <div class="glow-ring"></div>
+                  </div>
+                  <div class="card-content">
+                    <span class="agent-name">Guarantees</span>
+                    <div class="progress-track"><div class="progress-fill"></div></div>
+                  </div>
+                  <div class="card-status" *ngIf="agentStates['guarantees'].status === 'COMPLETED'">
+                    <span class="badge" [ngClass]="'badge-' + agentStates['guarantees'].decision?.toLowerCase()">{{ agentStates['guarantees'].decision }}</span>
+                  </div>
+                </div>
+
+                <!-- Compliance -->
+                <div class="agent-progress-card" [ngClass]="agentStates['compliance'].status.toLowerCase()">
+                  <div class="card-icon">
+                    <span class="icon">⚖️</span>
+                    <div class="glow-ring"></div>
+                  </div>
+                  <div class="card-content">
+                    <span class="agent-name">Compliance</span>
+                    <div class="progress-track"><div class="progress-fill"></div></div>
+                  </div>
+                  <div class="card-status" *ngIf="agentStates['compliance'].status === 'COMPLETED'">
+                    <span class="badge" [ngClass]="'badge-' + agentStates['compliance'].decision?.toLowerCase()">{{ agentStates['compliance'].decision }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Supervisor -->
+              <div class="supervisor-progress-card" [ngClass]="agentStates['supervisor'].status.toLowerCase()">
+                <div class="card-icon">
+                  <span class="icon">🧠</span>
+                  <div class="glow-ring"></div>
+                </div>
+                <div class="card-content">
+                  <span class="agent-name">Supervisor</span>
+                  <div class="progress-track"><div class="progress-fill"></div></div>
+                </div>
+                <div class="card-status" *ngIf="agentStates['supervisor'].status === 'COMPLETED'">
+                  <span class="badge badge-supervisor">REPORT READY</span>
                 </div>
               </div>
             </div>
@@ -368,7 +439,6 @@
             <div *ngIf="latestEvaluation" class="eval-report">
               <div class="report-meta">
                 <span>Evaluated {{ latestEvaluation.evaluation.createdAt | date:'medium' }}</span>
-                <span class="mode-badge">{{ latestEvaluation.evaluation.executionMode }}</span>
               </div>
 
               <div class="agent-cards-container">
@@ -417,17 +487,6 @@
         <div class="card panel-inner">
           <h3>Smart Decision Engine</h3>
           <p class="panel-desc">Execute the autonomous AI agent pipeline to generate an auditable credit evaluation report.</p>
-
-          <div class="mode-selector">
-            <button (click)="evalMode = 'FAST'" [class.active]="evalMode === 'FAST'" class="mode-btn">
-              <strong>FAST</strong>
-              <span>Immediate release</span>
-            </button>
-            <button (click)="evalMode = 'FULL'" [class.active]="evalMode === 'FULL'" class="mode-btn">
-              <strong>FULL</strong>
-              <span>Deep audit</span>
-            </button>
-          </div>
 
           <button (click)="triggerSmartDecision()" [disabled]="isEvaluating" class="btn-primary run-btn">
             <svg *ngIf="!isEvaluating" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
