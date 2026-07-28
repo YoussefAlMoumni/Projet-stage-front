@@ -352,9 +352,9 @@ export class DossiersComponent implements OnInit, OnDestroy {
                this.latestEvaluation = event;
                this.isEvaluating = false;
                this.cdr.detectChanges();
-            } else {
-               // PipelineStageEvent
-               const stageKey = event.stageName.toLowerCase();
+             } else {
+               // PipelineStageEvent or Error event
+               const stageKey = event.stageName ? event.stageName.toLowerCase() : '';
                
                if (event.status === 'STARTED') {
                  this.evaluationLog.push(`Running ${event.stageName} Agent Stage...`);
@@ -401,7 +401,11 @@ export class DossiersComponent implements OnInit, OnDestroy {
                  }
                  this.cdr.detectChanges();
                } else if (event.status === 'ERROR') {
-                 this.evaluationLog.push(`Pipeline error: ${event.message || 'Unknown error'}`);
+                 if (event.message && event.message.toLowerCase().includes('cancel')) {
+                     this.evaluationLog.push('<span class="text-red-500 font-bold">Ai Pipeline stopped</span>');
+                 } else {
+                     this.evaluationLog.push(`Pipeline error: ${event.message || 'Unknown error'}`);
+                 }
                  Object.keys(this.agentStates).forEach(key => {
                    if (this.agentStates[key].status === 'RUNNING') {
                      this.agentStates[key].status = 'ERROR';
@@ -413,7 +417,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
                  this.cdr.detectChanges();
                  break; // Stop reading the stream
                }
-            }
+             }
           }
         }
       }
