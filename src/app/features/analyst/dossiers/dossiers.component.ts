@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { DataStateService } from '../../../core/services/data-state.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Dossier, Loan, Collateral } from '../../../core/models/types';
 interface StageResult {
   stageName: string;
@@ -42,6 +43,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
   public dataState = inject(DataStateService);
   private apiService = inject(ApiService);
   private cdr = inject(ChangeDetectorRef);
+  private authService = inject(AuthService);
 
   dossiers: Dossier[] = [];
   selectedDossier: Dossier | null = null;
@@ -313,7 +315,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
       stageResults: []
     };
     
-    const token = localStorage.getItem('auth_token');
+    const token = this.authService.getToken();
     const url = `/api/dossiers/${this.selectedDossier.id}/ai-decision/stream?mode=${this.evalMode}`;
 
     try {
@@ -432,7 +434,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
   async stopSmartDecision(): Promise<void> {
     if (!this.selectedDossier || !this.isEvaluating) return;
     
-    const token = localStorage.getItem('auth_token');
+    const token = this.authService.getToken();
     const url = `/api/dossiers/${this.selectedDossier.id}/ai-decision/stop`;
 
     try {
