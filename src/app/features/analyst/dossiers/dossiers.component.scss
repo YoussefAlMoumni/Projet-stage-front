@@ -494,6 +494,9 @@
   .icon {
     font-size: 16px;
     z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .glow-ring {
