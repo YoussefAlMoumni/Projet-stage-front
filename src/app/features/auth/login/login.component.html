@@ -10,22 +10,22 @@
       </div>
 
       <div class="panel-headline">
-        <h1>Intelligent credit evaluation, built for teams.</h1>
-        <p>A focused workspace for analysts, supervisors, and administrators to intake dossiers, run AI-powered evaluations, and generate auditable lending decisions.</p>
+        <h1>Évaluation de crédit intelligente, conçue pour les équipes.</h1>
+        <p>Un espace de travail dédié aux analystes, superviseurs et administrateurs pour réceptionner les dossiers, exécuter des évaluations par IA et générer des décisions de prêt auditables.</p>
       </div>
 
       <ul class="panel-features">
         <li>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>5-stage autonomous AI pipeline</span>
+          <span>Pipeline d'IA autonome en 5 étapes</span>
         </li>
         <li>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>Role-based access control</span>
+          <span>Contrôle d'accès basé sur les rôles</span>
         </li>
         <li>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>Auditable decision reports</span>
+          <span>Rapports de décision auditables</span>
         </li>
       </ul>
     </div>
@@ -35,28 +35,28 @@
   <div class="login-form-side">
     <div class="login-form-card">
       <div class="form-card-header">
-        <h2>Sign in</h2>
-        <p>Enter your credentials to access the platform.</p>
+        <h2>Se connecter</h2>
+        <p>Entrez vos identifiants pour accéder à la plateforme.</p>
       </div>
 
       <form (ngSubmit)="login()" class="login-form">
         <div class="form-group">
-          <label for="username">Username</label>
+          <label for="username">Nom d'utilisateur</label>
           <input
             id="username"
             type="text"
             [(ngModel)]="username"
             name="username"
             required
-            placeholder="Your username"
+            placeholder="Votre nom d'utilisateur"
             autocomplete="username"
           />
         </div>
 
         <div class="form-group">
           <div class="password-label-row">
-            <label for="password">Password</label>
-            <a href="javascript:void(0)" (click)="goToForgotPassword()" class="forgot-link">Forgot password?</a>
+            <label for="password">Mot de passe</label>
+            <a href="javascript:void(0)" (click)="goToForgotPassword()" class="forgot-link">Mot de passe oublié ?</a>
           </div>
           <input
             id="password"
@@ -64,7 +64,7 @@
             [(ngModel)]="password"
             name="password"
             required
-            placeholder="Your password"
+            placeholder="Votre mot de passe"
             autocomplete="current-password"
           />
         </div>
@@ -75,10 +75,10 @@
         </div>
 
         <button type="submit" [disabled]="isLoading" class="signin-btn">
-          <span *ngIf="!isLoading">Sign in</span>
+          <span *ngIf="!isLoading">Se connecter</span>
           <span *ngIf="isLoading" class="loading-text">
             <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-            Signing in...
+            Connexion en cours...
           </span>
         </button>
       </form>

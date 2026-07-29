@@ -1,39 +1,39 @@
-# Intelligent Credit Granting Platform - Frontend
+# Plateforme Intelligente d'Octroi de Crédit - Frontend
 
-This is the frontend for the Intelligent Credit Granting Platform. It is a single-page application built using **Angular 22** and **TailwindCSS**.
+Il s'agit du frontend de la Plateforme Intelligente d'Octroi de Crédit. C'est une application monopage (SPA) construite avec **Angular 22** et **TailwindCSS**.
 
-## Key Technologies
+## Technologies Clés
 
 - **Angular 22**
 - **TypeScript**
-- **TailwindCSS** (for styling)
-- **RxJS** (for state management and reactive programming)
+- **TailwindCSS** (pour le style)
+- **RxJS** (pour la gestion de l'état et la programmation réactive)
 
-## Prerequisites
+## Prérequis
 
-- **Node.js** (v20 or higher recommended)
+- **Node.js** (v20 ou supérieur recommandé)
 - **npm** (Node Package Manager)
 
-## Setup & Running Locally
+## Configuration et Exécution Locale
 
-1. Open a terminal and navigate to this directory (`projet_stage_front`).
-2. Install the required dependencies:
+1. Ouvrez un terminal et accédez à ce répertoire (`projet_stage_front`).
+2. Installez les dépendances requises :
    ```bash
    npm install
    ```
-3. Start the Angular development server:
+3. Démarrez le serveur de développement Angular :
    ```bash
    npm start
    ```
-   *(This runs `ng serve` under the hood).*
+   *(Cela exécute `ng serve` en arrière-plan).*
 
-4. Navigate to `http://localhost:4200/` in your browser.
+4. Accédez à `http://localhost:4200/` dans votre navigateur.
 
-> **Note**: The frontend expects the Spring Boot backend to be running on `http://localhost:8081`. Ensure the backend is properly configured and running to authenticate and fetch data.
+> **Remarque** : Le frontend s'attend à ce que le backend Spring Boot fonctionne sur `http://localhost:8081`. Assurez-vous que le backend est correctement configuré et en cours d'exécution pour vous authentifier et récupérer des données.
 
-## Project Structure
+## Structure du Projet
 
-- `src/app/core/`: Core services (`ApiService`, `AuthService`, `DataStateService`), models, and guards.
-- `src/app/features/`: Feature modules and components (e.g., `analyst/dossiers`).
-- `src/app/shared/`: Shared UI components, pipes, and directives.
-- `src/styles.scss` / `tailwind.config.js`: Global styles and Tailwind configuration.
+- `src/app/core/` : Services principaux (`ApiService`, `AuthService`, `DataStateService`), modèles et gardes.
+- `src/app/features/` : Modules et composants fonctionnels (ex. : `analyst/dossiers`).
+- `src/app/shared/` : Composants UI, pipes et directives partagés.
+- `src/styles.scss` / `tailwind.config.js` : Styles globaux et configuration de Tailwind.

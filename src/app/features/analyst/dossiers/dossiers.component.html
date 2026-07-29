@@ -7,13 +7,13 @@
   <div *ngIf="viewMode === 'list'">
     <div class="workspace-header">
       <div class="header-titles">
-        <h1>Credit dossiers</h1>
-        <p>Search, evaluate, and browse active credit dossiers, loans, and collaterals.</p>
+        <h1>Dossiers de crédit</h1>
+        <p>Recherchez, évaluez et parcourez les dossiers de crédit actifs, les prêts et les garanties.</p>
       </div>
       <div class="header-actions">
         <button (click)="openCreateForm()" class="btn-primary">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          New request
+          Nouvelle demande
         </button>
       </div>
     </div>
@@ -23,34 +23,34 @@
         <thead>
           <tr>
             <th>SIREN</th>
-            <th>Client type</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Analyst</th>
+            <th>Type de client</th>
+            <th>Montant</th>
+            <th>Statut</th>
+            <th>Analyste</th>
             <th class="col-actions">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let dossier of dossiers" class="clickable-row">
             <td (click)="viewDossierDetails(dossier)"><span class="mono-cell">{{ dossier.siren }}</span></td>
-            <td (click)="viewDossierDetails(dossier)"><span class="client-pill" [ngClass]="dossier.clientType">{{ dossier.clientType }}</span></td>
+            <td (click)="viewDossierDetails(dossier)"><span class="client-pill" [ngClass]="dossier.clientType">{{ dossier.clientType === 'corporate' ? 'Entreprise' : (dossier.clientType === 'individual' ? 'Particulier' : dossier.clientType) }}</span></td>
             <td (click)="viewDossierDetails(dossier)">{{ dossier.loans[0]?.amount | currency:'EUR':'symbol':'1.0-0' }}</td>
-            <td (click)="viewDossierDetails(dossier)"><span class="status-pill" [ngClass]="dossier.status">{{ dossier.status }}</span></td>
-            <td (click)="viewDossierDetails(dossier)" class="muted-cell">{{ dossier.assignedAnalyst ? (dossier.assignedAnalyst.firstName + ' ' + dossier.assignedAnalyst.lastName) : 'Unassigned' }}</td>
+            <td (click)="viewDossierDetails(dossier)"><span class="status-pill" [ngClass]="dossier.status">{{ dossier.status === 'in_progress' ? 'En cours' : (dossier.status === 'approved' ? 'Approuvé' : (dossier.status === 'rejected' ? 'Refusé' : dossier.status)) }}</span></td>
+            <td (click)="viewDossierDetails(dossier)" class="muted-cell">{{ dossier.assignedAnalyst ? (dossier.assignedAnalyst.firstName + ' ' + dossier.assignedAnalyst.lastName) : 'Non assigné' }}</td>
             <td class="actions-cell">
-              <button (click)="viewDossierDetails(dossier)" class="action-btn" title="View details">
+              <button (click)="viewDossierDetails(dossier)" class="action-btn" title="Voir les détails">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
-              <button (click)="openEditForm(dossier)" class="action-btn" title="Edit">
+              <button (click)="openEditForm(dossier)" class="action-btn" title="Modifier">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
               </button>
-              <button (click)="deleteDossier(dossier.id!)" class="action-btn danger" title="Delete">
+              <button (click)="deleteDossier(dossier.id!)" class="action-btn danger" title="Supprimer">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
               </button>
             </td>
           </tr>
           <tr *ngIf="dossiers.length === 0 && !(dataState.isDossiersSyncing | async)">
-            <td colspan="6" class="empty-state">No credit dossiers found.</td>
+            <td colspan="6" class="empty-state">Aucun dossier de crédit trouvé.</td>
           </tr>
         </tbody>
       </table>
@@ -61,10 +61,10 @@
   <div *ngIf="viewMode === 'create'" class="form-wizard">
     <div class="workspace-header">
       <div class="header-titles">
-        <h1>New credit request</h1>
-        <p>Step {{ formStep }} of 3 — {{ formStep === 1 ? 'Client identification' : formStep === 2 ? 'Loan terms' : 'Collateral assets' }}</p>
+        <h1>Nouvelle demande de crédit</h1>
+        <p>Étape {{ formStep }} sur 3 — {{ formStep === 1 ? 'Identification du client' : formStep === 2 ? 'Conditions du prêt' : 'Actifs en garantie' }}</p>
       </div>
-      <button (click)="viewMode = 'list'" class="btn-secondary">Cancel</button>
+      <button (click)="viewMode = 'list'" class="btn-secondary">Annuler</button>
     </div>
 
     <!-- Progress -->
@@ -82,91 +82,91 @@
           <svg *ngIf="formStep > 2" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           <span *ngIf="formStep <= 2">2</span>
         </div>
-        <span class="step-label">Loan terms</span>
+        <span class="step-label">Conditions du prêt</span>
       </div>
       <div class="step-connector" [class.active]="formStep >= 3"></div>
       <div class="step" [class.active]="formStep >= 3">
         <div class="step-dot"><span>3</span></div>
-        <span class="step-label">Collateral</span>
+        <span class="step-label">Garantie</span>
       </div>
     </div>
 
     <div class="card wizard-card">
       <!-- Step 1 -->
       <div *ngIf="formStep === 1" class="wizard-step">
-        <h3>Client identification</h3>
+        <h3>Identification du client</h3>
         <div class="form-group">
-          <label for="siren">Company SIREN code *</label>
-          <input type="text" id="siren" [(ngModel)]="newDossier.siren" placeholder="e.g. 123456789" required />
+          <label for="siren">Code SIREN de l'entreprise *</label>
+          <input type="text" id="siren" [(ngModel)]="newDossier.siren" placeholder="ex. 123456789" required />
         </div>
         <div class="form-group">
-          <label for="clientType">Client profile</label>
+          <label for="clientType">Profil du client</label>
           <select id="clientType" [(ngModel)]="newDossier.clientType">
-            <option value="corporate">Corporate entity</option>
-            <option value="individual">Individual professional</option>
+            <option value="corporate">Entité corporative</option>
+            <option value="individual">Professionnel individuel</option>
           </select>
         </div>
       </div>
 
       <!-- Step 2 -->
       <div *ngIf="formStep === 2" class="wizard-step">
-        <h3>Loan terms</h3>
+        <h3>Conditions du prêt</h3>
         <div class="form-group">
-          <label for="amount">Capital amount (€) *</label>
+          <label for="amount">Montant du capital (€) *</label>
           <input type="number" id="amount" [(ngModel)]="newDossier.loans[0].amount" />
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="interestRate">Interest rate (%) *</label>
+            <label for="interestRate">Taux d'intérêt (%) *</label>
             <input type="number" id="interestRate" step="0.05" [(ngModel)]="newDossier.loans[0].interestRate" />
           </div>
           <div class="form-group">
-            <label for="termMonths">Amortization (months) *</label>
+            <label for="termMonths">Amortissement (mois) *</label>
             <input type="number" id="termMonths" [(ngModel)]="newDossier.loans[0].termMonths" />
           </div>
         </div>
         <div class="form-group">
-          <label for="paymentFrequency">Payment frequency</label>
+          <label for="paymentFrequency">Fréquence de paiement</label>
           <select id="paymentFrequency" [(ngModel)]="newDossier.loans[0].paymentFrequency">
-            <option value="monthly">Monthly</option>
-            <option value="quarterly">Quarterly</option>
-            <option value="annual">Annual</option>
+            <option value="monthly">Mensuelle</option>
+            <option value="quarterly">Trimestrielle</option>
+            <option value="annual">Annuelle</option>
           </select>
         </div>
       </div>
 
       <!-- Step 3 -->
       <div *ngIf="formStep === 3" class="wizard-step">
-        <h3>Collateral asset</h3>
+        <h3>Actifs en garantie</h3>
         <div class="form-group">
-          <label for="c-type">Asset category</label>
+          <label for="c-type">Catégorie d'actif</label>
           <select id="c-type" [(ngModel)]="newDossier.loans[0].collaterals[0].type">
-            <option value="real_estate">Real estate</option>
-            <option value="equipment">Industrial equipment</option>
-            <option value="securities">Financial securities</option>
-            <option value="guarantee">Cash guarantee</option>
+            <option value="real_estate">Immobilier</option>
+            <option value="equipment">Équipement industriel</option>
+            <option value="securities">Valeurs mobilières</option>
+            <option value="guarantee">Garantie en espèces</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="c-desc">Asset description *</label>
-          <input type="text" id="c-desc" [(ngModel)]="newDossier.loans[0].collaterals[0].description" placeholder="Address, serial numbers, valuation details…" />
+          <label for="c-desc">Description de l'actif *</label>
+          <input type="text" id="c-desc" [(ngModel)]="newDossier.loans[0].collaterals[0].description" placeholder="Adresse, numéros de série, détails de l'évaluation…" />
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="c-value">Estimated value (€) *</label>
+            <label for="c-value">Valeur estimée (€) *</label>
             <input type="number" id="c-value" [(ngModel)]="newDossier.loans[0].collaterals[0].estimatedValue" />
           </div>
           <div class="form-group">
-            <label for="c-date">Valuation date *</label>
+            <label for="c-date">Date d'évaluation *</label>
             <input type="date" id="c-date" [(ngModel)]="newDossier.loans[0].collaterals[0].valuationDate" />
           </div>
         </div>
       </div>
 
       <div class="wizard-footer">
-        <button *ngIf="formStep > 1" (click)="prevStep()" class="btn-secondary">Back</button>
-        <button *ngIf="formStep < 3" (click)="nextStep()" class="btn-primary">Next</button>
-        <button *ngIf="formStep === 3" (click)="saveDossier()" [disabled]="isLoading" class="btn-primary">File request</button>
+        <button *ngIf="formStep > 1" (click)="prevStep()" class="btn-secondary">Retour</button>
+        <button *ngIf="formStep < 3" (click)="nextStep()" class="btn-primary">Suivant</button>
+        <button *ngIf="formStep === 3" (click)="saveDossier()" [disabled]="isLoading" class="btn-primary">Déposer la demande</button>
       </div>
     </div>
   </div>
@@ -175,86 +175,86 @@
   <div *ngIf="viewMode === 'edit'" class="form-wizard">
     <div class="workspace-header">
       <div class="header-titles">
-        <h1>Edit credit request</h1>
-        <p>Modify dossier details, loans, and collaterals.</p>
+        <h1>Modifier la demande de crédit</h1>
+        <p>Modifier les détails du dossier, les prêts et les garanties.</p>
       </div>
-      <button (click)="viewMode = 'list'" class="btn-secondary">Cancel</button>
+      <button (click)="viewMode = 'list'" class="btn-secondary">Annuler</button>
     </div>
     
     <div class="card wizard-card" style="max-height: 70vh; overflow-y: auto;">
       <div class="wizard-step" style="display: block;">
-        <h3>Client identification</h3>
+        <h3>Identification du client</h3>
         <div class="form-group">
-          <label for="edit-siren">Company SIREN code *</label>
+          <label for="edit-siren">Code SIREN de l'entreprise *</label>
           <input type="text" id="edit-siren" [(ngModel)]="newDossier.siren" required />
         </div>
         <div class="form-group">
-          <label for="edit-clientType">Client profile</label>
+          <label for="edit-clientType">Profil du client</label>
           <select id="edit-clientType" [(ngModel)]="newDossier.clientType">
-            <option value="corporate">Corporate entity</option>
-            <option value="individual">Individual professional</option>
+            <option value="corporate">Entité corporative</option>
+            <option value="individual">Professionnel individuel</option>
           </select>
         </div>
       </div>
 
       <div class="wizard-step" *ngFor="let loan of newDossier.loans; let i = index" style="display: block; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
         <h3 style="display:flex; justify-content:space-between; align-items:center;">
-          Loan #{{i + 1}}
-          <button (click)="removeLoan(i)" class="btn-danger" style="font-size:0.8rem; padding: 4px 8px;">Remove Loan</button>
+          Prêt #{{i + 1}}
+          <button (click)="removeLoan(i)" class="btn-danger" style="font-size:0.8rem; padding: 4px 8px;">Supprimer le prêt</button>
         </h3>
         <div class="form-group">
-          <label>Capital amount (€) *</label>
+          <label>Montant du capital (€) *</label>
           <input type="number" [(ngModel)]="loan.amount" />
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Interest rate (%) *</label>
+            <label>Taux d'intérêt (%) *</label>
             <input type="number" step="0.05" [(ngModel)]="loan.interestRate" />
           </div>
           <div class="form-group">
-            <label>Amortization (months) *</label>
+            <label>Amortissement (mois) *</label>
             <input type="number" [(ngModel)]="loan.termMonths" />
           </div>
         </div>
         <div class="form-group">
-          <label>Payment frequency</label>
+          <label>Fréquence de paiement</label>
           <select [(ngModel)]="loan.paymentFrequency">
-            <option value="monthly">Monthly</option>
-            <option value="quarterly">Quarterly</option>
-            <option value="annual">Annual</option>
+            <option value="monthly">Mensuelle</option>
+            <option value="quarterly">Trimestrielle</option>
+            <option value="annual">Annuelle</option>
           </select>
         </div>
 
         <!-- Collaterals for this loan -->
         <div style="margin-left: 20px; border-left: 2px solid var(--border); padding-left: 15px;">
           <h4 style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; margin-bottom: 10px;">
-            Collaterals
-            <button (click)="addCollateral(i)" class="btn-secondary" style="font-size:0.8rem; padding: 4px 8px;">+ Add Collateral</button>
+            Garanties
+            <button (click)="addCollateral(i)" class="btn-secondary" style="font-size:0.8rem; padding: 4px 8px;">+ Ajouter une garantie</button>
           </h4>
           <div *ngFor="let col of loan.collaterals; let j = index" style="margin-bottom: 15px; background: var(--surface-hover); padding: 10px; border-radius: 4px;">
              <div style="display:flex; justify-content:flex-end;">
-                <button (click)="removeCollateral(i, j)" class="btn-danger" style="font-size:0.7rem; padding: 2px 6px;">Remove</button>
+                <button (click)="removeCollateral(i, j)" class="btn-danger" style="font-size:0.7rem; padding: 2px 6px;">Supprimer</button>
              </div>
              <div class="form-group">
-               <label>Asset category</label>
+               <label>Catégorie d'actif</label>
                <select [(ngModel)]="col.type">
-                 <option value="real_estate">Real estate</option>
-                 <option value="equipment">Industrial equipment</option>
-                 <option value="securities">Financial securities</option>
-                 <option value="guarantee">Cash guarantee</option>
+                 <option value="real_estate">Immobilier</option>
+                 <option value="equipment">Équipement industriel</option>
+                 <option value="securities">Valeurs mobilières</option>
+                 <option value="guarantee">Garantie en espèces</option>
                </select>
              </div>
              <div class="form-group">
-               <label>Asset description *</label>
+               <label>Description de l'actif *</label>
                <input type="text" [(ngModel)]="col.description" />
              </div>
              <div class="form-row">
                <div class="form-group">
-                 <label>Estimated value (€) *</label>
+                 <label>Valeur estimée (€) *</label>
                  <input type="number" [(ngModel)]="col.estimatedValue" />
                </div>
                <div class="form-group">
-                 <label>Valuation date *</label>
+                 <label>Date d'évaluation *</label>
                  <input type="date" [(ngModel)]="col.valuationDate" />
                </div>
              </div>
@@ -263,11 +263,11 @@
       </div>
       
       <div style="padding: 20px;">
-        <button (click)="addLoan()" class="btn-secondary" style="width: 100%;">+ Add Another Loan</button>
+        <button (click)="addLoan()" class="btn-secondary" style="width: 100%;">+ Ajouter un autre prêt</button>
       </div>
 
       <div class="wizard-footer">
-        <button (click)="saveDossier()" [disabled]="isLoading" class="btn-primary">Save Changes</button>
+        <button (click)="saveDossier()" [disabled]="isLoading" class="btn-primary">Enregistrer les modifications</button>
       </div>
     </div>
   </div>
@@ -277,14 +277,14 @@
     <div class="workspace-header">
       <div class="header-titles">
         <div class="detail-title-row">
-          <span class="status-pill" [ngClass]="selectedDossier.status">{{ selectedDossier.status }}</span>
+          <span class="status-pill" [ngClass]="selectedDossier.status">{{ selectedDossier.status === 'in_progress' ? 'En cours' : (selectedDossier.status === 'approved' ? 'Approuvé' : (selectedDossier.status === 'rejected' ? 'Refusé' : selectedDossier.status)) }}</span>
           <h1>Dossier {{ selectedDossier.siren }}</h1>
         </div>
-        <p>Analyst: <strong>{{ selectedDossier.assignedAnalyst ? (selectedDossier.assignedAnalyst.firstName + ' ' + selectedDossier.assignedAnalyst.lastName) : 'Unassigned' }}</strong></p>
+        <p>Analyste : <strong>{{ selectedDossier.assignedAnalyst ? (selectedDossier.assignedAnalyst.firstName + ' ' + selectedDossier.assignedAnalyst.lastName) : 'Non assigné' }}</strong></p>
       </div>
       <button (click)="viewMode = 'list'" class="btn-secondary">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-        Back
+        Retour
       </button>
     </div>
 
@@ -292,49 +292,49 @@
       <!-- Left: tabs + content -->
       <div class="detail-main">
         <div class="tab-strip">
-          <button (click)="activeDetailTab = 'overview'"    [class.active]="activeDetailTab === 'overview'">Overview</button>
-          <button (click)="activeDetailTab = 'loans'"       [class.active]="activeDetailTab === 'loans'">Loan parameters</button>
-          <button (click)="activeDetailTab = 'collaterals'" [class.active]="activeDetailTab === 'collaterals'">Guarantees</button>
-          <button (click)="activeDetailTab = 'decision'"    [class.active]="activeDetailTab === 'decision'">AI decision</button>
+          <button (click)="activeDetailTab = 'overview'"    [class.active]="activeDetailTab === 'overview'">Aperçu</button>
+          <button (click)="activeDetailTab = 'loans'"       [class.active]="activeDetailTab === 'loans'">Paramètres du prêt</button>
+          <button (click)="activeDetailTab = 'collaterals'" [class.active]="activeDetailTab === 'collaterals'">Garanties</button>
+          <button (click)="activeDetailTab = 'decision'"    [class.active]="activeDetailTab === 'decision'">Décision IA</button>
         </div>
 
         <div class="card tab-content">
           <!-- Overview -->
           <div *ngIf="activeDetailTab === 'overview'" class="tab-pane">
-            <h3 class="pane-title">Dossier metadata</h3>
+            <h3 class="pane-title">Métadonnées du dossier</h3>
             <div class="meta-grid">
               <div class="meta-row"><span class="meta-label">SIREN</span><span class="meta-value mono-text">{{ selectedDossier.siren }}</span></div>
-              <div class="meta-row"><span class="meta-label">Client class</span><span class="meta-value">{{ selectedDossier.clientType }}</span></div>
-              <div class="meta-row"><span class="meta-label">Intake date</span><span class="meta-value">{{ selectedDossier.creationDate | date:'mediumDate' }}</span></div>
-              <div class="meta-row"><span class="meta-label">Status</span><span class="meta-value"><span class="status-pill" [ngClass]="selectedDossier.status">{{ selectedDossier.status }}</span></span></div>
+              <div class="meta-row"><span class="meta-label">Classe de client</span><span class="meta-value">{{ selectedDossier.clientType === 'corporate' ? 'Entreprise' : (selectedDossier.clientType === 'individual' ? 'Particulier' : selectedDossier.clientType) }}</span></div>
+              <div class="meta-row"><span class="meta-label">Date d'admission</span><span class="meta-value">{{ selectedDossier.creationDate | date:'mediumDate' }}</span></div>
+              <div class="meta-row"><span class="meta-label">Statut</span><span class="meta-value"><span class="status-pill" [ngClass]="selectedDossier.status">{{ selectedDossier.status === 'in_progress' ? 'En cours' : (selectedDossier.status === 'approved' ? 'Approuvé' : (selectedDossier.status === 'rejected' ? 'Refusé' : selectedDossier.status)) }}</span></span></div>
             </div>
           </div>
 
           <!-- Loans -->
           <div *ngIf="activeDetailTab === 'loans'" class="tab-pane">
-            <h3 class="pane-title">Financing parameters</h3>
+            <h3 class="pane-title">Paramètres de financement</h3>
             <div class="data-list" *ngFor="let loan of selectedDossier.loans; let idx = index">
-              <div class="data-list-header">Loan #{{ idx + 1 }}</div>
+              <div class="data-list-header">Prêt #{{ idx + 1 }}</div>
               <div class="meta-grid">
                 <div class="meta-row"><span class="meta-label">Capital</span><span class="meta-value bold">{{ loan.amount | currency:'EUR' }}</span></div>
-                <div class="meta-row"><span class="meta-label">Rate</span><span class="meta-value">{{ loan.interestRate }}%</span></div>
-                <div class="meta-row"><span class="meta-label">Amortization</span><span class="meta-value">{{ loan.termMonths }} months</span></div>
-                <div class="meta-row"><span class="meta-label">Frequency</span><span class="meta-value">{{ loan.paymentFrequency }}</span></div>
+                <div class="meta-row"><span class="meta-label">Taux</span><span class="meta-value">{{ loan.interestRate }}%</span></div>
+                <div class="meta-row"><span class="meta-label">Amortissement</span><span class="meta-value">{{ loan.termMonths }} mois</span></div>
+                <div class="meta-row"><span class="meta-label">Fréquence</span><span class="meta-value">{{ loan.paymentFrequency }}</span></div>
               </div>
             </div>
           </div>
 
           <!-- Collaterals -->
           <div *ngIf="activeDetailTab === 'collaterals'" class="tab-pane">
-            <h3 class="pane-title">Secured guarantees</h3>
+            <h3 class="pane-title">Garanties sécurisées</h3>
             <div *ngFor="let loan of selectedDossier.loans">
               <div class="data-list" *ngFor="let c of loan.collaterals; let cIdx = index">
-                <div class="data-list-header">Guarantee #{{ cIdx + 1 }}</div>
+                <div class="data-list-header">Garantie #{{ cIdx + 1 }}</div>
                 <div class="meta-grid">
-                  <div class="meta-row"><span class="meta-label">Asset class</span><span class="meta-value">{{ c.type }}</span></div>
-                  <div class="meta-row"><span class="meta-label">Estimated value</span><span class="meta-value">{{ c.estimatedValue | currency:'EUR' }}</span></div>
-                  <div class="meta-row"><span class="meta-label">Valuation date</span><span class="meta-value">{{ c.valuationDate | date }}</span></div>
-                  <div class="meta-row"><span class="meta-label">Status</span><span class="meta-value">{{ c.status }}</span></div>
+                  <div class="meta-row"><span class="meta-label">Classe d'actif</span><span class="meta-value">{{ c.type }}</span></div>
+                  <div class="meta-row"><span class="meta-label">Valeur estimée</span><span class="meta-value">{{ c.estimatedValue | currency:'EUR' }}</span></div>
+                  <div class="meta-row"><span class="meta-label">Date d'évaluation</span><span class="meta-value">{{ c.valuationDate | date }}</span></div>
+                  <div class="meta-row"><span class="meta-label">Statut</span><span class="meta-value">{{ c.status }}</span></div>
                 </div>
                 <div class="description-block">
                   <span class="meta-label">Description</span>
@@ -349,10 +349,10 @@
             <!-- Loading state -->
             <div *ngIf="isEvaluating" class="pipeline-dashboard">
               <div class="pipeline-header">
-                <h3>Pipeline Execution</h3>
+                <h3>Exécution du pipeline</h3>
                 <div class="header-actions">
                   <span class="pipeline-progress">{{ evaluationProgress }}%</span>
-                  <button class="stop-btn" (click)="stopSmartDecision()" [disabled]="!isEvaluating">Stop Pipeline</button>
+                  <button class="stop-btn" (click)="stopSmartDecision()" [disabled]="!isEvaluating">Arrêter le pipeline</button>
                 </div>
               </div>
 
@@ -365,7 +365,7 @@
                     <div class="glow-ring"></div>
                   </div>
                   <div class="card-content">
-                    <span class="agent-name">Solvency</span>
+                    <span class="agent-name">Solvabilité</span>
                     <div class="progress-track"><div class="progress-fill"></div></div>
                   </div>
                   <div class="card-status" *ngIf="agentStates['solvency'].status === 'COMPLETED'">
@@ -380,7 +380,7 @@
                     <div class="glow-ring"></div>
                   </div>
                   <div class="card-content">
-                    <span class="agent-name">History</span>
+                    <span class="agent-name">Historique</span>
                     <div class="progress-track"><div class="progress-fill"></div></div>
                   </div>
                   <div class="card-status" *ngIf="agentStates['history'].status === 'COMPLETED'">
@@ -395,7 +395,7 @@
                     <div class="glow-ring"></div>
                   </div>
                   <div class="card-content">
-                    <span class="agent-name">Guarantees</span>
+                    <span class="agent-name">Garanties</span>
                     <div class="progress-track"><div class="progress-fill"></div></div>
                   </div>
                   <div class="card-status" *ngIf="agentStates['guarantees'].status === 'COMPLETED'">
@@ -410,7 +410,7 @@
                     <div class="glow-ring"></div>
                   </div>
                   <div class="card-content">
-                    <span class="agent-name">Compliance</span>
+                    <span class="agent-name">Conformité</span>
                     <div class="progress-track"><div class="progress-fill"></div></div>
                   </div>
                   <div class="card-status" *ngIf="agentStates['compliance'].status === 'COMPLETED'">
@@ -426,11 +426,11 @@
                   <div class="glow-ring"></div>
                 </div>
                 <div class="card-content">
-                  <span class="agent-name">Supervisor</span>
+                  <span class="agent-name">Superviseur</span>
                   <div class="progress-track"><div class="progress-fill"></div></div>
                 </div>
                 <div class="card-status" *ngIf="agentStates['supervisor'].status === 'COMPLETED'">
-                  <span class="badge badge-supervisor">REPORT READY</span>
+                  <span class="badge badge-supervisor">RAPPORT PRÊT</span>
                 </div>
               </div>
             </div>
@@ -438,11 +438,11 @@
             <!-- Report & Live Output -->
             <div *ngIf="latestEvaluation" class="eval-report">
               <div class="report-meta">
-                <span>Evaluated {{ latestEvaluation.evaluation.createdAt | date:'medium' }}</span>
+                <span>Évalué le {{ latestEvaluation.evaluation.createdAt | date:'medium' }}</span>
               </div>
 
               <div class="agent-cards-container">
-                <h4 class="section-label">Specialist AI Agents</h4>
+                <h4 class="section-label">Agents IA Spécialistes</h4>
                 <div class="agent-grid">
                   <div class="agent-card" *ngFor="let stage of latestEvaluation.stageResults">
                     <div class="agent-header">
@@ -450,7 +450,7 @@
                       <span class="agent-time">{{ stage.durationMs }}ms</span>
                     </div>
                     <div class="agent-summary" (click)="toggleStageDetails(stage.stageName)">
-                      <strong>{{ stage.summary || (stage.output ? (stage.output.split('\n').filter(l => l.trim().length > 0)[0] || 'No summary available') : 'No summary available') }}</strong>
+                      <strong>{{ stage.summary || (stage.output ? (stage.output.split('\n').filter(l => l.trim().length > 0)[0] || 'Aucun résumé disponible') : 'Aucun résumé disponible') }}</strong>
                       <span class="summary-toggle">{{ stageExpandedStates[stage.stageName] ? '▾' : '▸' }}</span>
                     </div>
                     <div class="agent-body" *ngIf="stageExpandedStates[stage.stageName]" [innerHTML]="parseMarkdown(stage.output)"></div>
@@ -459,24 +459,24 @@
               </div>
 
               <div class="markdown-area" *ngIf="latestEvaluation.evaluation.supervisorStageOutput">
-                <h4 class="section-label">Consolidated decision report (Supervisor)</h4>
+                <h4 class="section-label">Rapport de décision consolidé (Superviseur)</h4>
                 <div class="report-body" [innerHTML]="parseMarkdown(latestEvaluation.evaluation.supervisorStageOutput)"></div>
               </div>
 
               <!-- Analyst Action Buttons -->
               <div class="analyst-actions" *ngIf="latestEvaluation.evaluation.supervisorStageOutput">
                 <button (click)="updateDecisionStatus('approved')" class="btn-success decision-btn" [disabled]="isLoading">
-                  Approve Dossier
+                  Approuver le dossier
                 </button>
                 <button (click)="updateDecisionStatus('rejected')" class="btn-danger decision-btn" [disabled]="isLoading">
-                  Deny Dossier
+                  Refuser le dossier
                 </button>
               </div>
             </div>
 
             <!-- Empty -->
             <div *ngIf="!isEvaluating && !latestEvaluation" class="empty-state">
-              No evaluation has been run for this dossier yet.
+              Aucune évaluation n'a encore été effectuée pour ce dossier.
             </div>
           </div>
         </div>
@@ -485,13 +485,13 @@
       <!-- Right: trigger panel -->
       <div class="decision-panel">
         <div class="card panel-inner">
-          <h3>Smart Decision Engine</h3>
-          <p class="panel-desc">Execute the autonomous AI agent pipeline to generate an auditable credit evaluation report.</p>
+          <h3>Moteur de décision intelligent</h3>
+          <p class="panel-desc">Exécutez le pipeline d'agents IA autonomes pour générer un rapport d'évaluation de crédit auditable.</p>
 
           <button (click)="triggerSmartDecision()" [disabled]="isEvaluating" class="btn-primary run-btn">
             <svg *ngIf="!isEvaluating" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             <svg *ngIf="isEvaluating" class="spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-            {{ isEvaluating ? 'Running pipeline…' : 'Run consensus pipeline' }}
+            {{ isEvaluating ? 'Exécution du pipeline...' : 'Lancer le pipeline de consensus' }}
           </button>
         </div>
       </div>

@@ -1,8 +1,8 @@
 <div class="workspace">
   <div class="workspace-header">
     <div class="header-titles">
-      <h1>Analyst &amp; manager directory</h1>
-      <p>Operational staff overview with workload distribution and performance metrics.</p>
+      <h1>Annuaire des analystes et managers</h1>
+      <p>Aperçu du personnel opérationnel avec répartition de la charge de travail et mesures de performance.</p>
     </div>
   </div>
 
@@ -12,12 +12,12 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>Name</th>
+          <th>Nom</th>
           <th>Email</th>
-          <th>Role</th>
-          <th>Total Dossiers</th>
-          <th>Completed Dossiers</th>
-          <th>Performance Score</th>
+          <th>Rôle</th>
+          <th>Total des dossiers</th>
+          <th>Dossiers terminés</th>
+          <th>Score de performance</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -35,18 +35,18 @@
             </div>
           </td>
           <td class="email-cell">{{ perf.analyst.email }}</td>
-          <td><span class="role-pill" [ngClass]="perf.analyst.role">{{ perf.analyst.role }}</span></td>
+          <td><span class="role-pill" [ngClass]="perf.analyst.role">{{ perf.analyst.role === 'admin' ? 'Administrateur' : (perf.analyst.role === 'manager' ? 'Manager' : (perf.analyst.role === 'analyst' ? 'Analyste' : perf.analyst.role)) }}</span></td>
           <td class="count-cell">{{ perf.totalDossiers }}</td>
           <td class="count-cell">{{ perf.completedDossiers }}</td>
           <td class="count-cell">{{ perf.performanceScore.toFixed(1) }}%</td>
           <td>
             <button class="btn btn-danger" (click)="fireAnalyst(perf.analyst.id)" [disabled]="perf.analyst.fired">
-              {{ perf.analyst.fired ? 'Fired' : 'Fire' }}
+              {{ perf.analyst.fired ? 'Renvoyé' : 'Renvoyer' }}
             </button>
           </td>
         </tr>
         <tr *ngIf="performances.length === 0 && !(dataState.isAnalystsSyncing | async)">
-          <td colspan="7" class="empty-state">No analysts or managers found.</td>
+          <td colspan="7" class="empty-state">Aucun analyste ou manager trouvé.</td>
         </tr>
       </tbody>
     </table>

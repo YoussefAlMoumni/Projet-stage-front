@@ -1,8 +1,8 @@
 <div class="workspace">
   <div class="workspace-header">
     <div class="header-titles">
-      <h1>AI agent prompt tuning</h1>
-      <p>Customize prompt templates, model parameters, context windows, and temperature settings per sub-agent stage.</p>
+      <h1>Ajustement des prompts des agents IA</h1>
+      <p>Personnalisez les modèles de prompt, les paramètres du modèle, les fenêtres de contexte et les paramètres de température par étape de sous-agent.</p>
     </div>
   </div>
 
@@ -18,7 +18,7 @@
         [class.active]="activeStage === stage"
         class="stage-btn">
         <span class="stage-dot" [ngClass]="stage"></span>
-        <span class="stage-label">{{ stage | titlecase }}</span>
+        <span class="stage-label">{{ stage === 'solvency' ? 'Solvabilité' : (stage === 'history' ? 'Historique' : (stage === 'guarantees' ? 'Garanties' : (stage === 'compliance' ? 'Conformité' : (stage === 'supervisor' ? 'Superviseur' : stage)))) }}</span>
         <span *ngIf="getConfigForStage(stage)" class="version-chip">
           {{ getConfigForStage(stage)?.versionTag }}
         </span>
@@ -28,42 +28,42 @@
     <!-- Editor -->
     <div class="card editor-card" *ngIf="getConfigForStage(activeStage) as cfg">
       <div class="editor-header">
-        <h2>{{ cfg.stageName | titlecase }} stage specialist</h2>
+        <h2>Spécialiste de l'étape {{ cfg.stageName | titlecase }}</h2>
         <span class="version-meta" *ngIf="cfg.updatedAt">
-          Version <strong>{{ cfg.versionTag }}</strong> &middot; Updated {{ cfg.updatedAt | date:'mediumDate' }}
+          Version <strong>{{ cfg.versionTag }}</strong> &middot; Mis à jour le {{ cfg.updatedAt | date:'mediumDate' }}
         </span>
       </div>
 
       <div class="editor-grid">
         <!-- Prompt textarea -->
         <div class="prompt-section">
-          <label for="promptText">System instruction template *</label>
+          <label for="promptText">Modèle d'instruction système *</label>
           <p class="field-hint">
-            Placeholders like <code>&#123;siren&#125;</code>, <code>&#123;clientType&#125;</code>, <code>&#123;montantDemande&#125;</code> are injected at runtime.
+            Les espaces réservés comme <code>&#123;siren&#125;</code>, <code>&#123;clientType&#125;</code>, <code>&#123;montantDemande&#125;</code> sont injectés à l'exécution.
           </p>
           <textarea
             id="promptText"
             [(ngModel)]="cfg.promptText"
             rows="16"
-            placeholder="Enter instructions for the agent…"></textarea>
+            placeholder="Entrez les instructions pour l'agent…"></textarea>
         </div>
 
         <!-- Hyperparameters -->
         <div class="param-section">
-          <h3>Hyperparameters</h3>
+          <h3>Hyperparamètres</h3>
 
           <div class="form-group">
-            <label for="modelName">LLM model *</label>
+            <label for="modelName">Modèle LLM *</label>
             <input type="text" id="modelName" [(ngModel)]="cfg.modelName" placeholder="deepseek-r1:8b" />
           </div>
 
           <div class="form-group">
-            <label for="contextWindow">Context window (tokens) *</label>
+            <label for="contextWindow">Fenêtre de contexte (tokens) *</label>
             <input type="number" id="contextWindow" [(ngModel)]="cfg.contextWindowSize" placeholder="2048" />
           </div>
 
           <div class="form-group">
-            <label for="temperature">Temperature</label>
+            <label for="temperature">Température</label>
             <div class="range-row">
               <input type="range" id="temperature" min="0" max="1" step="0.05" [(ngModel)]="cfg.temperature" />
               <span class="range-val">{{ cfg.temperature | number:'1.2-2' }}</span>
@@ -71,12 +71,12 @@
           </div>
 
           <div class="form-group">
-            <label for="keepAlive">Keep alive</label>
-            <input type="text" id="keepAlive" [(ngModel)]="cfg.keepAliveSetting" placeholder="0s or 300s" />
+            <label for="keepAlive">Maintien en activité (Keep alive)</label>
+            <input type="text" id="keepAlive" [(ngModel)]="cfg.keepAliveSetting" placeholder="0s ou 300s" />
           </div>
 
           <button (click)="saveConfig(cfg)" [disabled]="isLoading" class="btn-save">
-            Save &amp; publish
+            Enregistrer et publier
           </button>
         </div>
       </div>

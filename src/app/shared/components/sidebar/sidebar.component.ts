@@ -34,13 +34,13 @@ export class SidebarComponent {
   userRole = this.authService.getRole();
 
   navItems: NavItem[] = [
-    { label: 'Dashboard',   iconSvg: ICONS.check, path: '/dashboard', roles: ['admin', 'manager', 'analyst'] },
-    { label: 'Employees',   iconSvg: ICONS.users,  path: '/employees',  roles: ['admin'] },
-    { label: 'AI Prompts',  iconSvg: ICONS.cpu,    path: '/prompts',    roles: ['admin'] },
+    { label: 'Tableau de bord', iconSvg: ICONS.check, path: '/dashboard', roles: ['admin', 'manager', 'analyst'] },
+    { label: 'Employés',    iconSvg: ICONS.users,  path: '/employees',  roles: ['admin'] },
+    { label: 'Prompts IA',  iconSvg: ICONS.cpu,    path: '/prompts',    roles: ['admin'] },
     { label: 'Dossiers',    iconSvg: ICONS.folder, path: '/dossiers',   roles: ['analyst', 'manager'] },
-    { label: 'Loans',       iconSvg: ICONS.credit, path: '/loans',      roles: ['analyst'] },
-    { label: 'Collaterals', iconSvg: ICONS.shield, path: '/collaterals',roles: ['analyst'] },
-    { label: 'Analysts',    iconSvg: ICONS.users,  path: '/analysts',   roles: ['manager'] },
+    { label: 'Prêts',       iconSvg: ICONS.credit, path: '/loans',      roles: ['analyst'] },
+    { label: 'Garanties',   iconSvg: ICONS.shield, path: '/collaterals',roles: ['analyst'] },
+    { label: 'Analystes',   iconSvg: ICONS.users,  path: '/analysts',   roles: ['manager'] },
   ];
 
   get visibleNavItems(): NavItem[] {
